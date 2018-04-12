@@ -42,7 +42,7 @@ object PlayerStateCMD : GameListener {
     val attacks = ConcurrentLinkedQueue<Pair<NetworkGUID, NetworkGUID>>()//A -> B
     var selfID = NetworkGUID(0)
     var selfStateID = NetworkGUID(0)
-	var selfSpectated = 0
+    var selfSpectated = 0
     
 
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
