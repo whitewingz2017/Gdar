@@ -271,17 +271,11 @@ object ActorCMD : GameListener {
                     val b = result
                 }
                 55 -> {
-					val SpectatedCounts = propertyInt()
-					var spectated = propertyInt()
-                    playerSpectatedCounts[actor.netGUID] = SpectatedCounts
-				println("55: SPECS: ${actor.netGUID} $SpectatedCounts")
-				println("55Self: SPECS: ${selfID} $SpectatedCounts")
-						if(actor.netGUID == selfID)
-					{
-						PlayerStateCMD.selfSpectated = SpectatedCounts
-						println("SPECTATING: $selfSpectated | $SpectatedCounts")
-						//println("TEST: ${PlayerStateCMD.selfSpectated[]}")
-					}
+                    //SpectatedCount
+                    val spectated = propertyInt()
+                    if (actor.netGUID == selfID) {
+                        selfSpectated = spectated
+                    }
                 }
                 56 -> {
 				val (id, team) = propertyObject()
