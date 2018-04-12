@@ -57,7 +57,7 @@ import pubg.radar.struct.cmd.ActorCMD.actorBeingRevived
 import pubg.radar.struct.cmd.ActorCMD.actorHealth
 import pubg.radar.struct.cmd.ActorCMD.actorWithPlayerState
 import pubg.radar.struct.cmd.ActorCMD.playerSpectatedCounts
-import pubg.radar.struct.cmd.ActorCMD.selfSpectated
+import pubg.radar.struct.cmd.PlayerStateCMD.selfSpectated
 import pubg.radar.struct.cmd.ActorCMD.playerStateToActor
 import pubg.radar.struct.cmd.GameStateCMD.ElapsedWarningDuration
 import pubg.radar.struct.cmd.GameStateCMD.NumAlivePlayers
