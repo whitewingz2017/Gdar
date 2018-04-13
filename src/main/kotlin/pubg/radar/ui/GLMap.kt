@@ -208,6 +208,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var hubFontSmall: BitmapFont
     private lateinit var hubFont1: BitmapFont
     private lateinit var hubFontShadow: BitmapFont
+	private lateinit var redFont: BitmapFont
+    private lateinit var redFontShadow: BitmapFont
     private lateinit var espFont: BitmapFont
     private lateinit var espFontShadow: BitmapFont
     private lateinit var compaseFont: BitmapFont
@@ -493,12 +495,20 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         val generatorHub = FreeTypeFontGenerator(Gdx.files.internal("font/AGENCYFB.TTF"))
         val paramHub = FreeTypeFontParameter()
         val hubhub = FreeTypeFontParameter()
+		val redHub = FreeTypeFontParameter()
 
 
         hubhub.characters = DEFAULT_CHARS
         hubhub.size = 24
         hubhub.color = WHITE
         hubFont1 = generatorHub.generateFont(hubhub)
+		
+		redHub.characters = DEFAULT_CHARS
+		redHub.size = 30
+		redHub.color = RED
+		redFont = generatorHub.generateFont(redHub)
+		redHub.color = Color(1f, 0f, 0f, 0.4f)
+		redFontShadow = generatorHub.generateFont(redHub)
 
 
 
@@ -668,12 +678,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         val playerStateGUID = actorWithPlayerState[selfID] ?: return
         val numKills = playerNumKills[playerStateGUID] ?: 0
         val zero = numKills.toString()
-		val numSpecs = playerSpec[playerStateGUID] ?: 0
-		val Specs = numSpecs.toString()
-		val numSpecs1 = selfSpectated[playerStateGUID] ?: 0
-		val Specs1 = numSpecs1.toString()
-		val numSpecs2 = playerSpectatedCounts[playerStateGUID] ?: 0
-		val Specs2 = numSpecs2.toString()
+		val numSpecs = selfSpectated
+		//val Specs = numSpecs.toString()
+		//val numSpecs1 = selfSpectated[playerStateGUID] ?: 0
+		//val Specs1 = numSpecs1.toString()
+		//val numSpecs2 = playerSpectatedCounts[playerStateGUID] ?: 0
+		//val Specs2 = numSpecs2.toString()
 		
         paint(fontCamera.combined) {
 		
@@ -686,43 +696,33 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             hubFont.draw(spriteBatch, "$NumAlivePlayers", windowWidth - 110f - layout.width / 2, windowHeight - 29f)
 			
             val teamText = "${GameStateCMD.NumAliveTeams}"
+			val numSpectator = "$selfSpectatedCount"
 
             if (teamText != numText && teamText > "0") {
                 layout.setText(hubFont, teamText)
                 spriteBatch.draw(hubpanel, windowWidth - 260f, windowHeight - 60f)
                 hubFontShadow.draw(spriteBatch, "TEAM", windowWidth - 215f, windowHeight - 29f)
-                hubFont.draw(spriteBatch, "${GameStateCMD.NumAliveTeams}", windowWidth - 340f - layout.width / 2, windowHeight - 29f)
-            //val SpectatedCounts = playerSpectatedCounts[actor.netGUID] ?: 0
+                hubFont.draw(spriteBatch, "${GameStateCMD.NumAliveTeams}", windowWidth - 240f - layout.width / 2, windowHeight - 29f)
+            /*//val SpectatedCounts = playerSpectatedCounts[actor.netGUID] ?: 0
 			//Spectate
-			val numText1 = "$Specs"
+			val numText1 = "$numSpecs"
             layout.setText(hubFont, numText1)
-            //spriteBatch.draw(hubpanel, windowWidth - 240f, windowHeight - 60f)
-            //hubFontShadow.draw(spriteBatch, "SPEC", windowWidth - 215f, windowHeight - 59f)
-            hubFont.draw(spriteBatch, "1: $Specs | 2: $Specs1 | 3: $Specs2", windowWidth - 240f - layout.width / 2, windowHeight - 59f)
+            hubFont.draw(spriteBatch, "SPECS: $numSpecs", windowWidth - 240f - layout.width / 2, windowHeight - 59f)
 			//kills
 			val numText2 = "$zero"
             layout.setText(hubFont, numText2)
             //spriteBatch.draw(hubpanel, windowWidth - 350f, windowHeight - 60f)
             hubFontShadow.draw(spriteBatch, "KILLED", windowWidth - 315f, windowHeight - 59f)
-            hubFont.draw(spriteBatch, "$zero", windowWidth - 340f - layout.width / 2, windowHeight - 59f)
+            hubFont.draw(spriteBatch, "$zero", windowWidth - 340f - layout.width / 2, windowHeight - 59f)*/
 			
 			
-			}else{
-			//val SpectatedCounts = playerSpectatedCounts[actor.netGUID] ?: 0
-			//Spectate
-			val numText1 = "$Specs"
-            layout.setText(hubFont, numText1)
-            //spriteBatch.draw(hubpanel, windowWidth - 240f, windowHeight - 60f)
-            //hubFontShadow.draw(spriteBatch, "SPEC", windowWidth - 215f, windowHeight - 59f)
-            hubFont.draw(spriteBatch, "1: $Specs | 2: $Specs1 | 3: $Specs2", windowWidth - 240f - layout.width / 2, windowHeight - 59f)
-			//kills
-			val numText2 = "$zero"
-            layout.setText(hubFont, numText2)
-            //spriteBatch.draw(hubpanel, windowWidth - 350f, windowHeight - 60f)
-            hubFontShadow.draw(spriteBatch, "KILLED", windowWidth - 315f, windowHeight - 29f)
-            hubFont.draw(spriteBatch, "$zero", windowWidth - 340f - layout.width / 2, windowHeight - 29f)
 			}
-
+			if (selfSpectatedCount > 0){
+                layout.setText(redFont, numSpectator)
+                spriteBatch.draw(hubpanel, windowWidth - 380f, windowHeight - 60f)
+                redFontShadow.draw(spriteBatch, "SPEC", windowWidth - 335f, windowHeight - 29f)
+                redFont.draw(spriteBatch, "${numSpectator}", windowWidth - 360f - layout.width / 2, windowHeight - 29f)
+            }
 
             // ITEM ESP FILTER PANEL
             spriteBatch.draw(hubpanelblank, 30f, windowHeight - 60f)

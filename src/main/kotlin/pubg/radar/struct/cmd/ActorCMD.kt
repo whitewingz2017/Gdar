@@ -30,12 +30,13 @@ import pubg.radar.struct.cmd.CMD.propertyVectorQ
 import pubg.radar.struct.cmd.CMD.repMovement
 import pubg.radar.struct.cmd.PlayerStateCMD.selfID
 import pubg.radar.struct.cmd.PlayerStateCMD.playerNames
-import pubg.radar.struct.cmd.PlayerStateCMD.selfSpectated
+//import pubg.radar.struct.cmd.PlayerStateCMD.selfSpectated
 import java.util.concurrent.ConcurrentHashMap
 
 var selfDirection = 0f
 val selfCoords = Vector3()
 var selfAttachTo: Actor? = null
+var selfSpectatedCount = 0
 
 
 object ActorCMD : GameListener {
@@ -48,7 +49,7 @@ object ActorCMD : GameListener {
         playerStateToActor.clear()
         actorHealth.clear()
 		playerSpectatedCounts.clear()
-		selfSpectated.clear()
+		//selfSpectated.clear()
     }
 
     val actorWithPlayerState = ConcurrentHashMap<NetworkGUID, NetworkGUID>()
@@ -57,7 +58,6 @@ object ActorCMD : GameListener {
 	val playerSpectatedCounts = ConcurrentHashMap<NetworkGUID, Int>()
     val actorDowned = ConcurrentHashMap<NetworkGUID, Boolean>()
     val actorBeingRevived = ConcurrentHashMap<NetworkGUID, Boolean>()
-	val selfSpectated = ConcurrentHashMap<NetworkGUID, Int>()
 
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
         with(bunch) {
@@ -273,8 +273,11 @@ object ActorCMD : GameListener {
                 55 -> {
                     //SpectatedCount
                     val spectated = propertyInt()
+					selfSpectatedCount = spectated
+					println("Other: ${actor.netGUID} $spectated")
                     if (actor.netGUID == selfID) {
-                        selfSpectated = spectated
+                        PlayerStateCMD.selfSpectated = spectated
+						println("SPECS: ${PlayerStateCMD.selfSpectated}")
                     }
                 }
                 56 -> {

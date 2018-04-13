@@ -25,7 +25,6 @@ object PlayerStateCMD : GameListener {
     override fun onGameOver() {
         playerNames.clear()
         playerNumKills.clear()
-		playerSpec.clear()
 		uniqueIds.clear()
         teamNumbers.clear()
         attacks.clear()
