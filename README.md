@@ -1,6 +1,6 @@
 # RageRadar
 
-A Minimalist - Kotlin ([VMRadar](http://www.vmradar.net)) fork.
+PUBG Radar
 
 | ![enter image description here](https://s17.postimg.org/vwp8srvsf/image.png)
 
