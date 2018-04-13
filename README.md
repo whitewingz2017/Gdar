@@ -1,6 +1,6 @@
 # RageRadar
 
-PUBG Radar
+# PUBG Radar
 
 | ![enter image description here](https://s17.postimg.org/vwp8srvsf/image.png)
 
@@ -118,6 +118,3 @@ There are two sets of controls. The first set is designed for laptop users witho
 	- 2x
 - Trash
 	- Everything Else
-
-# Deployment
-Same as any build on VMRadar.net
