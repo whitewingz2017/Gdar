@@ -16,6 +16,10 @@ import java.util.concurrent.ConcurrentHashMap
 object TeamCMD : GameListener {
     val team = ConcurrentHashMap<String, String>()
     val mapMakersByName = ConcurrentHashMap<NetworkGUID, Vector3>()
+	val teamMemberNumber = ConcurrentHashMap<NetworkGUID, Int>()
+	val teamNumber = ConcurrentHashMap<NetworkGUID, Int>()
+	val teamNumberss = ConcurrentHashMap<NetworkGUID, Int>()
+	val playerNames = ConcurrentHashMap<String, String>()
 
 
     init {
@@ -35,20 +39,39 @@ object TeamCMD : GameListener {
                     actor.owner = if (netGUID.isValid()) netGUID else null
                     bugln { " owner: [$netGUID] $obj ---------> beOwned:$actor" }
                 }
-                16 -> {
-                    val playerLocation = propertyVector100()
-                }
-                17 -> {
-                    val playerRotation = readRotationShort()
-                }
-                18 -> {
-                    val playerName = propertyString()
-                    team[playerName] = playerName
-                }
-                23 -> {
+				26 -> {
                     val markerLocation = propertyVector100()
                     mapMakersByName[actor.netGUID] = markerLocation
+					println("TMark: $mapMakersByName")
                 }
+				27   ->
+					{//MemberNumber
+					val teamNumber = readInt(15)
+					teamNumberss[actor.netGUID] = teamNumber
+					//println("${playerNames}${actor.netGUID} TeamNumber=$teamNumber \n")
+					}
+                28 -> {
+                    val playerLocation = propertyVector100()
+                }
+				29 -> {
+                    val name = propertyString()
+					team[name] = name
+					playerNames[name] = name
+					//query(name)
+					println("$(actor.netGUID} playerID=$name $teamNumber")
+					}
+                30 -> {
+                    val playerRotation = readRotationShort()
+                }
+                
+                
+				
+				32 ->
+				{
+				//SquadNumber
+					var SquadMemberIndex = propertyInt()
+					println("32 SID: $SquadMemberIndex")
+					}
                 else -> return false
             }
             return true

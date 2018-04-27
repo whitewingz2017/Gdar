@@ -16,28 +16,45 @@ object APawnCMD {
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
         with(bunch) {
             when (waitingHandle) {
-                1 -> if (readBit()) {//bHidden
+				2 -> {
+                    val (a, obj) = readObject()
+                    val attachTo = if (a.isValid()) {
+                        actors[a]?.attachChildren?.put(actor.netGUID, actor.netGUID)
+                    } else null
+                    if (actor.attachParent != null)
+                        actors[actor.attachParent!!]?.attachChildren?.remove(actor.netGUID)
+                    actor.attachParent = attachTo
+                    bugln { ",attachTo [$actor---------> $a ${NetGUIDCache.guidCache.getObjectFromNetGUID(a)} ${ActorChannel.actors[a]}" }
+                }
+                4 -> {
+                    val locationOffset = propertyVector100()
+                    if (actor.Type == DroopedItemGroup) {
+                        bugln { "${actor.location} locationOffset $locationOffset" }
+                    }
+                    bugln { ",attachLocation $actor ----------> $locationOffset" }
+                }
+                8 -> if (readBit()) {//bHidden
                     ActorChannel.visualActors.remove(actor.netGUID)
                     bugln { ",bHidden id$actor" }
                 }
-                2 -> if (!readBit()) {// bReplicateMovement
+                9 -> if (!readBit()) {// bReplicateMovement
                     ActorChannel.visualActors.remove(actor.netGUID)
                     bugln { ",!bReplicateMovement id$actor " }
                 }
-                3 -> if (readBit()) {//bTearOff
+                10 -> if (readBit()) {//bTearOff
                     ActorChannel.visualActors.remove(actor.netGUID)
                     bugln { ",bTearOff id$actor" }
                 }
-                4 -> {
+                13 -> {
                     val role = readInt(ROLE_MAX)
                     val b = role
                 }
-                5 -> {
+                12 -> {
                     val (netGUID, obj) = readObject()
                     actor.owner = if (netGUID.isValid()) netGUID else null
                     bugln { " owner: [$netGUID] $obj ---------> beOwned:$actor" }
                 }
-                6 -> {
+                14 -> {
                     repMovement(actor)
                     with(actor) {
                         when (Type) {
@@ -48,26 +65,7 @@ object APawnCMD {
                         }
                     }
                 }
-                7 -> {
-                    val (a, obj) = readObject()
-                    val attachTo = if (a.isValid()) {
-                        actors[a]?.attachChildren?.put(actor.netGUID, actor.netGUID)
-                    } else null
-                    if (actor.attachParent != null)
-                        actors[actor.attachParent!!]?.attachChildren?.remove(actor.netGUID)
-                    actor.attachParent = attachTo
-                    bugln { ",attachTo [$actor---------> $a ${NetGUIDCache.guidCache.getObjectFromNetGUID(a)} ${ActorChannel.actors[a]}" }
-                }
-                8 -> {
-                    val locationOffset = propertyVector100()
-                    if (actor.Type == DroopedItemGroup) {
-                        bugln { "${actor.location} locationOffset $locationOffset" }
-                    }
-                    bugln { ",attachLocation $actor ----------> $locationOffset" }
-                }
-				16   -> propertyObject()
-          17   -> readUInt16()
-          18   -> propertyObject()
+                
                 else -> return false
             }
             return true

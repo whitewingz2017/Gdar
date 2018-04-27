@@ -47,98 +47,97 @@ object PlayerStateCMD : GameListener {
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
         with(bunch) {
             when (waitingHandle) {
-                1 -> {
+			    7 -> {
+                    val result = readBit()
+                }
+                8 -> {
                     val bHidden = readBit()
 //          println("bHidden=$bHidden")
                 }
-                2 -> {
+                9 -> {
                     val bReplicateMovement = readBit()
 //          println("bHidden=$bReplicateMovement")
                 }
-                3 -> {
+                10 -> {
                     val bTearOff = readBit()
 //          println("bHidden=$bTearOff")
                 }
-                4 -> {
+				12 -> {
+                    val (ownerGUID, owner) = propertyObject()
+                }
+                13 -> {
                     val role = readInt(ROLE_MAX)
                     val b = role
                 }
-                5 -> {
-                    val (ownerGUID, owner) = propertyObject()
-                }
-                7 -> {
-                    val (a, obj) = readObject()
-                }
-                13 -> {
-                    readInt(ROLE_MAX)
-                }
-                16 -> {
-                    val score = propertyFloat()
+				14 -> {
+                    val result = readBit()
+					}
+                15 -> {
+                    val result = propertyInt()
+					}
+				16 -> {
+                    val bFromPreviousLevel = propertyBool()
+//          println("${actor.netGUID} bFromPreviousLevel=$bFromPreviousLevel")
                 }
                 17 -> {
-                    val ping = propertyByte()
+                    val isABot = propertyBool()
+//          println("${actor.netGUID} isABot=$isABot")
                 }
                 18 -> {
+                    val bIsInactive = propertyBool()
+//          println("${actor.netGUID} bIsInactive=$bIsInactive")
+                }
+                19 -> {
+                    val bIsSpectator = propertyBool()
+//          println("${actor.netGUID} bIsSpectator=$bIsSpectator")
+                }
+                20 -> {
+                    val bOnlySpectator = propertyBool()
+//          println("${actor.netGUID} bOnlySpectator=$bOnlySpectator")
+                }
+				21 -> {
+                    val ping = propertyByte()
+                }
+                22 -> {
+                    val playerID = propertyInt()
+//          println("${actor.netGUID} playerID=$playerID")
+                }
+				23 -> {
                     val name = propertyString()
                     playerNames[actor.netGUID] = name
                       println("${actor.netGUID} playerID=$name")
                 }
-                19 -> {
-                    val playerID = propertyInt()
-//          println("${actor.netGUID} playerID=$playerID")
-                }
-                20 -> {
-                    val bFromPreviousLevel = propertyBool()
-//          println("${actor.netGUID} bFromPreviousLevel=$bFromPreviousLevel")
-                }
-                21 -> {
-                    val isABot = propertyBool()
-//          println("${actor.netGUID} isABot=$isABot")
-                }
-                22 -> {
-                    val bIsInactive = propertyBool()
-//          println("${actor.netGUID} bIsInactive=$bIsInactive")
-                }
-                23 -> {
-                    val bIsSpectator = propertyBool()
-//          println("${actor.netGUID} bIsSpectator=$bIsSpectator")
-                }
                 24 -> {
-                    val bOnlySpectator = propertyBool()
-//          println("${actor.netGUID} bOnlySpectator=$bOnlySpectator")
+                    val score = propertyFloat()
                 }
                 25 -> {
                     val StartTime = propertyInt()
-//          println("${actor.netGUID} StartTime=$StartTime")
+          println("25 ${actor.netGUID} StartTime=$StartTime")
                 }
                 26 -> {
                     val uniqueId = propertyNetId()
                     uniqueIds[uniqueId] = actor.netGUID
-//          println("${playerNames[actor.netGUID]}${actor.netGUID} uniqueId=$uniqueId")
+          println("26 ${playerNames[actor.netGUID]}${actor.netGUID} uniqueId=$uniqueId")
                 }
-                27 -> {//indicate player's death
-                    val Ranking = propertyInt()
-//          println("${playerNames[actor.netGUID]}${actor.netGUID} Ranking=$Ranking")
-                }
-                28 -> {
+				 27 -> {
                     val AccountId = propertyString()
 //          println("${actor.netGUID} AccountId=$AccountId")
                 }
-                29 -> {
-                    val ReportToken = propertyString()
-                }
-                30 -> {
-                    return false
-                }
-                31 -> {
-                    val ObserverAuthorityType = readInt(4)
-                }
-                32 -> {
-                    val teamNumber = readInt(100)
-                    teamNumbers[actor.netGUID] = teamNumber
-                }
-                33 -> {
+				28 -> {
+                    val bIsInAircraft = propertyBool()
+                } 
+				29 -> {
                     val bIsZombie = propertyBool()
+                }
+				30 -> {
+                    val currentAttackerPlayerNetId = propertyString()
+                    attacks.add(Pair(uniqueIds[currentAttackerPlayerNetId]!!, actor.netGUID))
+                }
+				31 -> {//LastHitTime
+                    val lastHitTime = propertyFloat()
+                }
+				33 -> {
+                    val ObserverAuthorityType = readInt(4)
                 }
                 34 -> {
                     val scoreByDamage = propertyFloat()
@@ -155,35 +154,40 @@ object PlayerStateCMD : GameListener {
                 38 -> {
                     val NumKills = propertyInt()
                     playerNumKills[actor.netGUID] = NumKills
+					println("NUM KILLS: $NumKills")
                 }
-                39 -> {
+				39 -> {
+                    val HeadShots = propertyInt()
+                }
+				40 -> {
+                    val LongestDistanceKill = propertyFloat()
+                }
+				41 -> {
+                    val TotalGivenDamages = propertyFloat()
+                }
+				42 ->
+				{
                     val TotalMovedDistanceMeter = propertyFloat()
                     selfStateID = actor.netGUID//only self will get this update
 //          selfID = actor.netGUID//only self will get this update
+                }43 -> {//indicate player's death
+                    val Ranking = propertyInt()
+//          println("${playerNames[actor.netGUID]}${actor.netGUID} Ranking=$Ranking")
                 }
-                40 -> {
-                    val TotalGivenDamages = propertyFloat()
-                }
-                41 -> {
-                    val LongestDistanceKill = propertyFloat()
-                }
-                42 -> {
-                    val HeadShots = propertyInt()
-                }
-                43 -> {//ReplicatedEquipableItems
+                //44 -> 
+				45 ->
+				{//ReplicatedEquipableItems
                     return false
                 }
-                44 -> {
-                    val bIsInAircraft = propertyBool()
+				46 -> {
+                    val ReportToken = propertyString()
                 }
-                45 -> {//LastHitTime
-                    val lastHitTime = propertyFloat()
+                47 -> {
+                    val teamNumber = readInt(100)
+                    teamNumbers[actor.netGUID] = teamNumber
+					println("48 TNum: $teamNumber")
                 }
-                46 -> {
-                    val currentAttackerPlayerNetId = propertyString()
-                    attacks.add(Pair(uniqueIds[currentAttackerPlayerNetId]!!, actor.netGUID))
-                }
-                else -> return false
+				else -> return false
             }
         }
         return true

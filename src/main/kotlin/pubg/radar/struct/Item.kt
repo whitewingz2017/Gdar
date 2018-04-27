@@ -87,7 +87,8 @@ class Item {
                         "AWM" to "AWM",
                         "M24" to "M24",
                         "M249" to "M249",
-                        "Mk14" to "Mk14"),
+                        "Mk14" to "Mk14",
+						"FlareGun" to "FlareGun"),
 
                 "Boost" to mapOf(
                         "EnergyDrink" to "Drink",
@@ -103,7 +104,9 @@ class Item {
                         "45mm" to "45mm",
                         "556mm" to "556mm",
                         "762mm" to "762mm",
-                        "300mm" to "300mm"
+                        "300mm" to "300mm",
+						 "300" to "300Mag",
+						"Flare" to "Flare"
                 ),
 
                 "Armor" to mapOf(

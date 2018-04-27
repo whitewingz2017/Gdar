@@ -13,44 +13,44 @@ object DroppedItemInteractionComponentCMD {
         with(bunch) {
             when (waitingHandle) {
                 1 -> {
-                    val bReplicates = readBit()
-                    val a = bReplicates
-                }
-                2 -> {
                     val isAlive = readBit()
                     val a = isAlive
                 }
-                3 -> {
+				2 -> {
+                    val bReplicates = readBit()
+                    val a = bReplicates
+                }
+				3 -> {
+                    return false
+                }
+                4 -> {
                     val attachParent = readObject()
                     val a = attachParent
 //          println("attachParent:$attachParent")
-                }
-                4 -> {
-                    return false
                 }
                 5 -> {
                     val attachSocketName = readName()
                     val a = attachSocketName
                 }
-                6 -> {
-                    val bReplicatesAttachmentReference = readBit()
-                    val a = bReplicatesAttachmentReference
-                }
-                7 -> {
-                    val bReplicatesAttachment = readBit()
-                    val a = bReplicatesAttachment
-                }
-                8 -> {
+				6 -> {
                     val bAbsoluteLocation = readBit()
                     val a = bAbsoluteLocation
                 }
-                9 -> {
+                7 -> {
                     val bAbsoluteRotation = readBit()
                     val a = bAbsoluteRotation
                 }
-                10 -> {
+                8 -> {
                     val bAbsoluteScale = readBit()
                     val a = bAbsoluteScale
+                }
+				9 -> {
+                    val bReplicatesAttachment = readBit()
+                    val a = bReplicatesAttachment
+                }
+                10 -> {
+                    val bReplicatesAttachmentReference = readBit()
+                    val a = bReplicatesAttachmentReference
                 }
                 11 -> {
                     val bVisible = readBit()

@@ -35,6 +35,9 @@ class Icons(sheet: Texture, size: Int) {
             "FlashBang" to arrayOf(1, 3),
             "Molotov" to arrayOf(2, 3),
             "Grenade" to arrayOf(3, 3),
+			//Flare Gun
+			"FlareGun" to arrayOf(4, 3),
+			"Flare" to arrayOf(5, 3),
             // 4 Ammo
             "9mm" to arrayOf(1, 4),
             "45mm" to arrayOf(2, 4),

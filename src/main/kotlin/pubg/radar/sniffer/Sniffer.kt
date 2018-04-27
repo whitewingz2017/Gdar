@@ -157,6 +157,9 @@ class Sniffer
               packets.add(Pair(raw, false))
             else if (udp.header.srcPort.valueAsInt() in 7000..7999)
               packets.add(Pair(raw, true))
+			  
+			  
+			  
           }
           catch (e : Exception)
           {
@@ -168,46 +171,36 @@ class Sniffer
 
         fun sniffLocationOffline(): Thread {
             return thread(isDaemon = true) {
-                val files = arrayOf("c:\\testserver01.pcap")
-                //val files = arrayOf(filename)
-        for (file in files)
-        {
-          val handle = Pcaps.openOffline(file)
-
-          while (true)
-          {
-            try
-            {
-              val packet = handle.nextPacket ?: break
-              val ip = packet[IpPacket::class.java]
-              val udp = Sniffer.udp_payload(packet) ?: continue
-              val raw = udp.payload.rawData
-
-              if (udp.header.dstPort.valueAsInt() in 7000..7999)
-                packets.add(Pair(raw, false))
-              else if (udp.header.srcPort.valueAsInt() in 7000..7999)
-                packets.add(Pair(raw, true))
-
+                 val files = arrayOf("c:\\testserver01.pcap")
+                for (file in files) {
+                    val handle = Pcaps.openOffline(file)
+                    // don't need this on offline mode
+                    // dumperObj.setHandle(handle)
+                    while (true) {
+                        try {
+                            // fix handle.nextPacket in mac, haven't test on other plat
+                            val packet = handle.nextPacket ?: break
+                            val udp = udp_payload(packet) ?: continue
+                            val raw = udp.payload.rawData
+                            // if(udp.header.srcPort.valueAsInt() in 7000..7999 || udp.header.dstPort.valueAsInt() in 7000..7999) {
+                            //     val dumper = dumperObj.getDumper()
+                            //     dumper.dump(packet,handle.timestamp)
+                            // }
+                            if(udp.header.srcPort.valueAsInt() in 7000..7999) {
+                                proc_raw_packet(raw)
+                            }
+                            if(udp.header.dstPort.valueAsInt() in 7000..7999) {
+                                proc_raw_packet(raw, false)
+                            }
+                        } catch (e: IndexOutOfBoundsException) {
+                        } catch (e: Exception) {
+                        } catch (e: NotOpenException) {
+                            break
+                        }
+                        Thread.sleep(2)
+                    }
+                }
             }
-            catch (e : Exception)
-            {
-            }
-            catch (e : IndexOutOfBoundsException)
-            {
-            }
-            catch (e : Exception)
-            {
-            }
-            catch (e : NotOpenException)
-            {
-              e.printStackTrace()
-            }
-            Thread.sleep(2)
-
-          }
-        }
-            }
-			  parsePackets()
         }
     /*
         private fun parseSelfLocation(raw: ByteArray): Boolean {

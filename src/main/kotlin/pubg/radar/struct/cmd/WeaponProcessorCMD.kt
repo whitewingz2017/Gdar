@@ -21,7 +21,7 @@ object WeaponProcessorCMD {
             //AActor
                 1 -> if (readBit()) {//bHidden
                 }
-                2 -> if (!readBit()) {// bReplicateMovement
+                7 -> if (!readBit()) {// bReplicateMovement
                 }
                 3 -> if (readBit()) {//bTearOff
                 }
@@ -37,7 +37,7 @@ object WeaponProcessorCMD {
                 6 -> {
                     repMovement(actor)
                 }
-                7 -> {
+                2 -> {
                     val (a, _) = readObject()
                     val attachTo = if (a.isValid()) {
                         actors[a]?.attachChildren?.put(actor.netGUID, actor.netGUID)
@@ -54,7 +54,9 @@ object WeaponProcessorCMD {
                 11 -> propertyName()
                 12 -> readObject()
                 13 -> readInt(ROLE_MAX)
-                14 -> propertyBool()
+                14 -> {
+                    repMovement(actor)
+                }
                 15 -> propertyObject()
             //AWeaponProcessor
                 16 -> {//EquippedWeapons

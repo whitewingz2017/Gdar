@@ -23,7 +23,7 @@ class ActorChannel(ChIndex: Int, client: Boolean = true) : Channel(ChIndex, CHTY
         val actors = ConcurrentHashMap<NetworkGUID, Actor>()
         val visualActors = ConcurrentHashMap<NetworkGUID, Actor>()
         val airDropLocation = ConcurrentHashMap<NetworkGUID, Vector3>()
-        val airDropItems = ConcurrentHashMap<NetworkGUID,ArrayList<String>>()
+        val airDropItems = ConcurrentHashMap<NetworkGUID, MutableList<tuple2<NetworkGUID, String?>>>()
         val droppedItemLocation = ConcurrentHashMap<NetworkGUID, tuple2<Vector3, String>>()
         val itemGuidToStringName = ConcurrentHashMap<NetworkGUID, String?>()
         val corpseLocation = ConcurrentHashMap<NetworkGUID, Vector3>()
@@ -39,6 +39,7 @@ class ActorChannel(ChIndex: Int, client: Boolean = true) : Channel(ChIndex, CHTY
             actors.clear()
             visualActors.clear()
             airDropLocation.clear()
+            airDropItems.clear()
             droppedItemLocation.clear()
             itemGuidToStringName.clear()
             droppedItemToItem.clear()
@@ -102,11 +103,19 @@ class ActorChannel(ChIndex: Int, client: Boolean = true) : Channel(ChIndex, CHTY
                         repObj = _subobj
                     } else {
                         val (classGUID, classObj) = bunch.readObject()//SubOjbectClass,SubObjectClassNetGUID
-                        if (classObj != null && (actor.Type == DroopedItemGroup || actor.Type == DroppedItem)) {
+                        if (classObj != null) {
                             val sn = Item.isGood(classObj.pathName)
-                            if (sn != null)
-                                droppedItemLocation[netguid] = tuple2(Vector3(actor.location.x, actor.location.y, actor.location.z), sn)
-                                //itemGuidToStringName[netguid] = sn ?: continue
+                            when {
+                                (actor.Type == DroopedItemGroup || actor.Type == DroppedItem) -> {
+                                    if (sn != null)
+                                        droppedItemLocation[netguid] = tuple2(Vector3(actor.location.x, actor.location.y, actor.location.z), sn)
+
+                                }
+                                actor.Type == AirDrop -> {
+                                    if(airDropItems[actor.netGUID] == null) airDropItems[actor.netGUID] = mutableListOf()
+                                    if(airDropItems[actor.netGUID]?.contains(tuple2(netguid,sn)) == false) airDropItems[actor.netGUID]?.add(tuple2(netguid,sn))
+                                }
+                            }
                         }
                         bugln { "subObjClass:${actor.netGUID} ${actor.archetype.pathName} classObj:$classObj" }
                         if (!classGUID.isValid() || classObj == null)
@@ -195,7 +204,9 @@ class ActorChannel(ChIndex: Int, client: Boolean = true) : Channel(ChIndex, CHTY
                         actors[netGUID] = this
                         when (Type) {
                             Weapon -> weapons[netGUID.value] = this
-                            AirDrop -> airDropLocation[netGUID] = location
+                            AirDrop -> {
+                                airDropLocation[netGUID] = location
+                            }
                             DeathDropItemPackage -> corpseLocation[netGUID] = location
                             else -> {
                             }

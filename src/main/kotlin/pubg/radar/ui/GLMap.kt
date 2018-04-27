@@ -52,18 +52,19 @@ import pubg.radar.struct.Archetype
 import pubg.radar.struct.Archetype.*
 import pubg.radar.struct.NetworkGUID
 import pubg.radar.struct.cmd.*
+import pubg.radar.struct.cmd.ActorCMD.actorAims
 import pubg.radar.struct.cmd.ActorCMD.actorDowned
 import pubg.radar.struct.cmd.ActorCMD.actorBeingRevived
 import pubg.radar.struct.cmd.ActorCMD.actorHealth
 import pubg.radar.struct.cmd.ActorCMD.actorWithPlayerState
-import pubg.radar.struct.cmd.ActorCMD.playerSpectatedCounts
-import pubg.radar.struct.cmd.PlayerStateCMD.selfSpectated
+//import pubg.radar.struct.cmd.ActorCMD.spectatedCount //SelfSpectated Count
+//import pubg.radar.struct.cmd.ActorCMD.playerSpectatedCounts
+//import pubg.radar.struct.cmd.PlayerStateCMD.selfSpectated
 import pubg.radar.struct.cmd.ActorCMD.playerStateToActor
 import pubg.radar.struct.cmd.GameStateCMD.ElapsedWarningDuration
 import pubg.radar.struct.cmd.GameStateCMD.NumAlivePlayers
 import pubg.radar.struct.cmd.GameStateCMD.bCanKillerSpectate
 import pubg.radar.struct.cmd.GameStateCMD.NumAliveTeams
-//import pubg.radar.struct.cmd.GameStateCMD.NumAliveTeams
 import pubg.radar.struct.cmd.GameStateCMD.PoisonGasWarningPosition
 import pubg.radar.struct.cmd.GameStateCMD.PoisonGasWarningRadius
 import pubg.radar.struct.cmd.GameStateCMD.RedZonePosition
@@ -82,6 +83,7 @@ import pubg.radar.struct.cmd.PlayerStateCMD.teamNumbers
 
 import pubg.radar.util.tuple4
 import wumo.pubg.struct.cmd.TeamCMD.team
+//import wumo.pubg.struct.cmd.TeamCMD.teamNumberss
 import java.security.Key
 import java.text.DecimalFormat
 import java.util.*
@@ -118,6 +120,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         selfCoords.setZero()
         selfAttachTo = null
         firstAttach = true
+		//selfSpectatedCount = 0
 
         /*
         preSelfCoords.set(if (isErangel) GLMap.spawnErangel else GLMap.spawnDesert)
@@ -136,15 +139,15 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
     fun show() {
         val config = Lwjgl3ApplicationConfiguration()
-        config.setTitle("RageRadar 1.5")
+        config.setTitle("RageRadar 2.0 - SHOW MENU[INS]")
         config.useOpenGL3(false, 2, 1)
-        config.setWindowedMode(1200, 800)
+        config.setWindowedMode(800, 600)
         config.setResizable(true)
         config.setBackBufferConfig(4, 4, 4, 4, 16, 4, 8)
         Lwjgl3Application(this, config)
     }
 
-    private var playersize = 5f
+    private var playersize = 4f
     private var self2Coords = Vector2(0f, 0f)
 
     private lateinit var spriteBatch: SpriteBatch
@@ -152,6 +155,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     var allPlayers : ArrayList<renderInfo>? = null
     private lateinit var mapErangelTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var mapMiramarTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
+    private lateinit var mapS: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var mapTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var iconImages: Icons
     private lateinit var corpseboximage: Texture
@@ -174,6 +178,11 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var hubpanel: Texture
     private lateinit var hubpanelblank: Texture
 
+	//NumberPlayer
+	private lateinit var pnum1: Texture
+	private lateinit var pnum2: Texture
+	private lateinit var pnum3: Texture
+	
     private lateinit var vehicle: Texture
     private lateinit var plane: Texture
     private lateinit var boat: Texture
@@ -222,13 +231,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     val healthBarHeight = 2000f
 
     val gridWidth = 813000f
-    val runSpeed = 6.3 * 100//6.3m/s
+    val runSpeed = 7.3 * 100//6.3m/s
     val unit = gridWidth / 8
     val unit2 = unit / 10
-    val visionRadius = mapWidth / 10
+    val visionRadius = mapWidth / 8
 
-    val attackLineDuration = 1000
-    val pinRadius = 4000f
+    val attackLineDuration = 3000
+    val pinRadius = 5000f
 
     private val tileZooms = listOf("256", "512", "1024", "2048", "4096", "8192")
     private val tileRowCounts = listOf(1, 2, 4, 8, 16, 32)
@@ -241,7 +250,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private val aimStartTime = HashMap<NetworkGUID, Long>()
     private val attackLineStartTime = LinkedList<Triple<NetworkGUID, NetworkGUID, Long>>()
     private val pinLocation = Vector2()
-    private var filterWeapon = 1
+    private var filterWeapon = -1
     private var filterAttach = 1
     private var filterLvl2 = 1
     private var filterScope = 1
@@ -253,6 +262,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private var filterNames = -1
     private var filterUseless = 1
     private var toggleView = 1
+	private var screenScale = 1f
     private var toggleAirDropLines = 1
 
     private var neverShow = arrayListOf("")
@@ -288,11 +298,11 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     fun Vector2.windowToMap() = windowToMap(x, y)
     override fun scrolled(amount: Int): Boolean {
 
-        if (camera.zoom > 0.035f && camera.zoom < 1.09f) {
+        if (camera.zoom > 0.015f && camera.zoom < 1.09f) {
             camera.zoom *= 1.05f.pow(amount)
         } else {
-            if (camera.zoom < 0.035f) {
-                camera.zoom = 0.041f
+            if (camera.zoom < 0.015f) {
+                camera.zoom = 0.016f
                 println("Max Zoom")
             }
             if (camera.zoom > 1.09f) {
@@ -440,7 +450,10 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         hubpanelblank = Texture(Gdx.files.internal("images/hub_panel_blank_long.png"))
         corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
         airdropimage = Texture(Gdx.files.internal("icons/airdrop.png"))
-        vehicle = Texture(Gdx.files.internal("images/vehicle.png"))
+        pnum1 = Texture(Gdx.files.internal("images/n2.png"))
+        pnum2 = Texture(Gdx.files.internal("images/n3.png"))
+        pnum3 = Texture(Gdx.files.internal("images/n4.png"))
+		vehicle = Texture(Gdx.files.internal("images/vehicle.png"))
         arrow = Texture(Gdx.files.internal("images/arrow.png"))
         plane = Texture(Gdx.files.internal("images/plane.png"))
         player = Texture(Gdx.files.internal("images/player.png"))
@@ -548,7 +561,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         param.borderColor = Color.BLACK;
         param.borderWidth = 1.5f;
         param.color = WHITE
-        param.size = 20
+        param.size = 12
         itemNameFont = generator.generateFont(param)
         param.borderColor = Color.BLACK;
         param.borderWidth = 1f;
@@ -678,13 +691,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         val playerStateGUID = actorWithPlayerState[selfID] ?: return
         val numKills = playerNumKills[playerStateGUID] ?: 0
         val zero = numKills.toString()
-		val numSpecs = selfSpectated
-		//val Specs = numSpecs.toString()
-		//val numSpecs1 = selfSpectated[playerStateGUID] ?: 0
-		//val Specs1 = numSpecs1.toString()
-		//val numSpecs2 = playerSpectatedCounts[playerStateGUID] ?: 0
-		//val Specs2 = numSpecs2.toString()
 		
+
         paint(fontCamera.combined) {
 		
 
@@ -696,77 +704,80 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             hubFont.draw(spriteBatch, "$NumAlivePlayers", windowWidth - 110f - layout.width / 2, windowHeight - 29f)
 			
             val teamText = "${GameStateCMD.NumAliveTeams}"
-			val numSpectator = "$selfSpectatedCount"
+			//val numSpectator = "$selfSpectatedCount"
 
             if (teamText != numText && teamText > "0") {
                 layout.setText(hubFont, teamText)
                 spriteBatch.draw(hubpanel, windowWidth - 260f, windowHeight - 60f)
                 hubFontShadow.draw(spriteBatch, "TEAM", windowWidth - 215f, windowHeight - 29f)
                 hubFont.draw(spriteBatch, "${GameStateCMD.NumAliveTeams}", windowWidth - 240f - layout.width / 2, windowHeight - 29f)
-            /*//val SpectatedCounts = playerSpectatedCounts[actor.netGUID] ?: 0
 			//Spectate
-			val numText1 = "$numSpecs"
-            layout.setText(hubFont, numText1)
-            hubFont.draw(spriteBatch, "SPECS: $numSpecs", windowWidth - 240f - layout.width / 2, windowHeight - 59f)
-			//kills
-			val numText2 = "$zero"
-            layout.setText(hubFont, numText2)
-            //spriteBatch.draw(hubpanel, windowWidth - 350f, windowHeight - 60f)
-            hubFontShadow.draw(spriteBatch, "KILLED", windowWidth - 315f, windowHeight - 59f)
-            hubFont.draw(spriteBatch, "$zero", windowWidth - 340f - layout.width / 2, windowHeight - 59f)*/
+			//val numText1 = "$numSpecs"
+            //layout.setText(hubFont, numText1)
+            //hubFont.draw(spriteBatch, "EYES: $numSpectator", windowWidth - 240f - layout.width / 2, windowHeight - 59f)
+
 			
 			
 			}
-			if (selfSpectatedCount > 0){
-                layout.setText(redFont, numSpectator)
+/*			val specCount = spectatedCount
+			val eyes = specCount.toString()
+			val numText1 = "$eyes"
+			layout.setText(hubFont, numText1)
+			spriteBatch.draw(hubpanel, windowWidth - 400f, windowHeight - 60f)
+			redFontShadow.draw(spriteBatch, "EYES", windowWidth - 355f, windowHeight - 29f)
+			redFont.draw(spriteBatch, "$eyes", windowWidth - 610f + 228f - layout.width / 2, windowHeight - 29f)
+	*/		
+			/*if (selfSpectatedCount > 0){
+               layout.setText(redFont, numSpectator)
                 spriteBatch.draw(hubpanel, windowWidth - 380f, windowHeight - 60f)
-                redFontShadow.draw(spriteBatch, "SPEC", windowWidth - 335f, windowHeight - 29f)
+                redFontShadow.draw(spriteBatch, "EYES", windowWidth - 335f, windowHeight - 29f)
                 redFont.draw(spriteBatch, "${numSpectator}", windowWidth - 360f - layout.width / 2, windowHeight - 29f)
-            }
+            }*/
 
+
+			
             // ITEM ESP FILTER PANEL
             spriteBatch.draw(hubpanelblank, 30f, windowHeight - 60f)
-
-            // This is what you were trying to do
+			// This is what you were trying to do
             if (filterWeapon != 1)
-                espFont.draw(spriteBatch, "WEAPON", 40f, windowHeight - 25f)
+                espFont.draw(spriteBatch, "WEAPON[A]", 40f, windowHeight - 25f)
             else
-                espFontShadow.draw(spriteBatch, "WEAPON", 40f, windowHeight - 25f)
+                espFontShadow.draw(spriteBatch, "WEAPON[A]", 40f, windowHeight - 25f)
 
             if (filterAttach != 1)
-                espFont.draw(spriteBatch, "ATTACH", 40f, windowHeight - 42f)
+                espFont.draw(spriteBatch, "ATTACH[Z]", 40f, windowHeight - 42f)
             else
-                espFontShadow.draw(spriteBatch, "ATTACH", 40f, windowHeight - 42f)
+                espFontShadow.draw(spriteBatch, "ATTACH[Z]", 40f, windowHeight - 42f)
 
             if (filterScope != 1)
-                espFont.draw(spriteBatch, "SCOPE", 100f, windowHeight - 25f)
+                espFont.draw(spriteBatch, "SCOPE[S]", 100f, windowHeight - 25f)
             else
-                espFontShadow.draw(spriteBatch, "SCOPE", 100f, windowHeight - 25f)
+                espFontShadow.draw(spriteBatch, "SCOPE[S]", 100f, windowHeight - 25f)
 
             if (filterAmmo != 1)
-                espFont.draw(spriteBatch, "AMMO", 100f, windowHeight - 42f)
+                espFont.draw(spriteBatch, "AMMO[X]", 100f, windowHeight - 42f)
             else
-                espFontShadow.draw(spriteBatch, "AMMO", 100f, windowHeight - 42f)
+                espFontShadow.draw(spriteBatch, "AMMO[X]", 100f, windowHeight - 42f)
 
             if (filterLvl2 != 1)
-                espFont.draw(spriteBatch, "EQUIP", 150f, windowHeight - 25f)
+                espFont.draw(spriteBatch, "EQUIP[D]", 150f, windowHeight - 25f)
             else
-                espFontShadow.draw(spriteBatch, "EQUIP", 150f, windowHeight - 25f)
+                espFontShadow.draw(spriteBatch, "EQUIP[D]", 150f, windowHeight - 25f)
 
             if (filterHeals != 1)
-                espFont.draw(spriteBatch, "HEALS", 150f, windowHeight - 42f)
+                espFont.draw(spriteBatch, "HEALS[C]", 150f, windowHeight - 42f)
             else
-                espFontShadow.draw(spriteBatch, "HEALS", 150f, windowHeight - 42f)
+                espFontShadow.draw(spriteBatch, "HEALS[C]", 150f, windowHeight - 42f)
 
             if (filterLevel3 != 1)
-                espFont.draw(spriteBatch, "LEVEL3", 200f, windowHeight - 25f)
+                espFont.draw(spriteBatch, "LEVEL3[F]", 200f, windowHeight - 25f)
             else
-                espFontShadow.draw(spriteBatch, "LEVEL3", 200f, windowHeight - 25f)
+                espFontShadow.draw(spriteBatch, "LEVEL3[F]", 200f, windowHeight - 25f)
 
             if (filterUseless != 1)
-                espFont.draw(spriteBatch, "TRASH", 200f, windowHeight - 42f)
+                espFont.draw(spriteBatch, "TRASH[V]", 200f, windowHeight - 42f)
             else
-                espFontShadow.draw(spriteBatch, "TRASH", 200f, windowHeight - 42f)
+                espFontShadow.draw(spriteBatch, "TRASH[V]", 200f, windowHeight - 42f)
 
             if (laptopToggle == 1) {
                 espFont.draw(spriteBatch, "[F1] Laptop Mode ON", 270f, windowHeight - 25f)
@@ -804,7 +815,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         weaponsToFilter = if (filterWeapon != 1) {
             arrayListOf("")
         } else {
-            arrayListOf("M16A4", "SCAR-L", "AK47", "SKS", "Mini14", "DP28")
+            arrayListOf("M16A4", "SCAR-L", "AK47", "SKS", "Mini14", "DP28", "FlareGun")
         }
 
         healsToFilter = if (filterHeals != 1) {
@@ -832,7 +843,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         }
 
 
-        specialItems = arrayListOf("AWM", "M24", "M249", "Mk14", "Groza", "G1B", "AUG", "Helmet3", "Armor3", "Bag3", "Syringe", "MedKit", "AR.Supp", "S.Supp", "CQBSS", "ACOG", "GhillieBrown", "GhillieGreen")
+        specialItems = arrayListOf("AWM", "M24", "M249", "Mk14", "Groza", "G1B", "AUG", "Helmet3", "Armor3", "Bag3", "Syringe", "MedKit", "AR.Supp", "S.Supp", "CQBSS", "ACOG", "GhillieBrown", "GhillieGreen", "FlareGun")
 
 
         val iconScale = 1f / camera.zoom
@@ -878,7 +889,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                         false, true)
             }
             //Draw Airdrop Icon
-            airDropLocation.keys.forEach {
+            /*airDropLocation.keys.forEach {
                 val grid = airDropLocation[it] ?: return@forEach
                 val items = itemBag[it]
                 val (x, y) = grid
@@ -908,10 +919,52 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 loot?.forEachIndexed { i, item ->
                     val offset = (i+1) * 13
                     val item = item
-                    nameFont.draw(spriteBatch, "| $item",
-                        sx +15, windowHeight - sy + 45 - offset)
+					when(item){
+					"AWM" 	-> { redFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) 	}
+					"Groza" -> { redFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) 	}
+					"M24"	-> { redFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) 	}
+					"M249"	-> { redFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) 	}
+					"AUG"	-> { redFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) 	}
+					"Mk14"	-> { redFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) 	}
+					"ACOG"	-> { nameFont.draw(spriteBatch, "| 8X", sx +15, windowHeight - sy + 45 - offset) 	}
+					else 	-> { nameFont.draw(spriteBatch, "| $item", sx +15, windowHeight - sy + 45 - offset) }
+					}
+                    /*nameFont.draw(spriteBatch, "| $item",
+                        sx +15, windowHeight - sy + 45 - offset)*/
                 }
+            }*/
+
+			            //Draw Airdrop Icon
+				airDropLocation.keys.forEach {
+                val grid = airDropLocation[it] ?: return@forEach
+                val (x, y) = grid
+                val items = airDropItems
+				val (sx, sy) = Vector2(x, y).mapToWindow()
+				val syFix = windowHeight - sy
+				val iconScale = if (camera.zoom < 1 / 14f) 
+				{
+					(2f / camera.zoom)* screenScale
+				}else {
+					(2f / (1 / 15f))* screenScale
+				}
+				spriteBatch.draw(airdropimage, sx - iconScale / 2, syFix + iconScale /2, iconScale, -iconScale, 0, 0, 64, 64, false, true)
+				
+				try {
+				airDropItems[it]?.forEachIndexed { i, item ->
+				val (netGUID, item) = item
+				if (toggleAirDropLines == 1){
+				val fontText = "${item}"
+				val pad = 1 * 3
+				val dist = ((i * getTextHeight(nameFont, fontText))) + pad
+				nameFont.draw(spriteBatch, "| ${item}", sx + (20 *screenScale), (windowHeight - sy + 30) - dist)
+				}
+				}
+				} catch (e: Exception) {
+					println("${e}")
+				}
             }
+
+
 
 
             //OLD
@@ -969,7 +1022,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             spriteBatch.draw(
                     player,
                     sx, windowHeight - sy - 2, 4.toFloat() / 2,
-                    4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 6f, 5f,
+                    4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 5f, 4f,
                     dir * -1, 0, 0, 64, 64, true, false)
         }
     }
@@ -1358,6 +1411,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 Player -> actorInfos?.forEach {
                     for ((_, _) in typeLocation) {
                         val (actor, x, y, dir) = it
+						actor!!
                         val (sx, sy) = Vector2(x, y).mapToWindow()
                         if (isTeammate(actor)) {
                             if (toggleView != -1) {
@@ -1367,13 +1421,30 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                                         2.toFloat() / 2,
                                         2.toFloat() / 2,
                                         12.toFloat(), 2.toFloat(),
-                                        20f, 8f,
+                                        20f, 6f,
                                         dir * -1, 0, 0, 800, 64, true, false)
                             }
+
+							val playerStateGUID = actorWithPlayerState[actor.netGUID] ?: return@forEach
+							val name = playerNames[playerStateGUID] ?: return@forEach
+							var playerStateGUIDx = NetworkGUID(playerStateGUID.toString().drop(18).dropLast(1).toInt() + 2)
+							/*when (teamNumberss[playerStateGUIDx]){
+							0 -> espFont.draw(spriteBatch, "$name [YELLOW]\n", 145f, windowHeight - 635f) 
+							1 -> espFont.draw(spriteBatch, "$name [ORANGE]\n", 145f, windowHeight - 655f) 
+							2 -> espFont.draw(spriteBatch, "$name [BLUE]\n", 145f, windowHeight - 675f) 							
+							3 -> espFont.draw(spriteBatch, "$name [GREEN]\n", 145f, windowHeight - 695f) 
+							4 -> espFont.draw(spriteBatch, "$name [5]\n", 145f, windowHeight - 725f) 
+							5 -> espFont.draw(spriteBatch, "$name [6]\n", 145f, windowHeight - 745f) 
+							6 -> espFont.draw(spriteBatch, "$name [7]\n", 145f, windowHeight - 765f) 
+							}*/
+							
+							if (teamNumbers[playerStateGUIDx] != null)
+			{
+			}
                             spriteBatch.draw(
                                     teamplayer,
                                     sx, windowHeight - sy - 2, 4.toFloat() / 2,
-                                    4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 6f, 5f,
+                                    4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 4f, 3f,
                                     dir * -1, 0, 0, 64, 64, true, false)
                         } else {
                             if (toggleView != -1) {
@@ -1383,13 +1454,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                                         2.toFloat() / 2,
                                         2.toFloat() / 2,
                                         12.toFloat(), 2.toFloat(),
-                                        10f, 8f,
+                                        10f, 6f,
                                         dir * -1, 0, 0, 800, 64, true, false)
                             }
                             spriteBatch.draw(
                                     arrow,
                                     sx, windowHeight - sy - 2, 4.toFloat() / 2,
-                                    4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 6f, 5f,
+                                    4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 4f, 3f,
                                     dir * -1, 0, 0, 64, 64, true, false)
                         }
                     }
@@ -1411,12 +1482,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                                         sx - 2, windowHeight - sy - 2, 4.toFloat() / 2,
                                         4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 2 * playersize, 2 * playersize,
                                         dir * -1, 0, 0, 128, 128, true, false)
-                            } else {
+                            } else if (name in team) {
                                 spriteBatch.draw(
-                                        parachute,
+                                        parachute_team,
                                         sx - 2, windowHeight - sy - 2, 4.toFloat() / 2,
                                         4.toFloat() / 2, 4.toFloat(), 4.toFloat(), 2 * playersize, 2 * playersize,
                                         dir * -1, 0, 0, 128, 128, true, false)
+										nameFont.draw(spriteBatch, "$name", sx + 10, windowHeight - sy + 10)
                             }
                         } else {
                             spriteBatch.draw(
@@ -1465,13 +1537,18 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             val (sx, sy) = mapToWindow(x, y)
             val playerStateGUID = actorWithPlayerState[actor.netGUID] ?: return@forEach
             val name = playerNames[playerStateGUID] ?: return@forEach
-            //   val teamNumber = teamNumbers[playerStateGUID] ?: 0
+            //val name = playerNames[playerStateGUID] ?: return@forEach
+			//   val teamNumber = teamNumbers[playerStateGUID] ?: 0
             val numKills = playerNumKills[playerStateGUID] ?: 0
             val health = actorHealth[actor.netGUID] ?: 100f
-			val SpectatedCounts = playerSpectatedCounts[actor.netGUID] ?: 0
+			//val SpectatedCounts = playerSpectatedCounts[actor.netGUID] ?: 0
             val equippedWeapons = actorHasWeapons[actor.netGUID]
-            val df = DecimalFormat("###.#")
-            var weapon: MutableList<String> = mutableListOf<String>()
+            val df = DecimalFormat("###.#")		
+			var playerStateGUIDx = NetworkGUID(playerStateGUID.toString().drop(18).dropLast(1).toInt() + 2)
+			//val number = teamMemberNumber[playerStateGUIDx]
+			var myPlayerStateGUID = actorWithPlayerState[selfID]
+            val myName = playerNames[actor.netGUID]
+			var weapon: MutableList<String> = mutableListOf<String>()
             val offsetDist = 3
             if (equippedWeapons != null) {
                 for (w in equippedWeapons) {
@@ -1480,13 +1557,55 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                     weapon.add("${result[2].substring(4)}")
                 }
             }
+			
             if (filterNames != 1) {
-                //First Let's Draw DISTANCE
-                val fontText = "${distance}m | $angle°"
+			if (teamNumbers[playerStateGUIDx] != null)
+			{
+			 val number = teamNumbers[playerStateGUIDx]
+			    val fontText = "${distance}m | $angle° | [$number]"
                 var wep_xoff = getPositionOffset(nameFont,fontText)
                 nameFont.draw(spriteBatch,
                         "$fontText", sx - wep_xoff.toFloat(), windowHeight - sy +30)
-                //Name
+             when {
+			 number == null -> {
+			 espFont.draw(spriteBatch, "$myName [YELLOW[NULL]]\n", 45f, windowHeight - 435f) 
+			 spriteBatch.draw(pnum3, 30f, windowHeight - 650, 15f, 15f)
+			 }
+			 number == 0 -> {
+			 espFont.draw(spriteBatch, "$myName [YELLOW]\n", 45f, windowHeight - 535f) 
+			 spriteBatch.draw(pnum3, 30f, windowHeight - 650, 15f, 15f)
+			 }
+			 number == 1 -> {
+			 espFont.draw(spriteBatch, "$name [ORANGE]\n", 45f, windowHeight - 600f) 
+			 spriteBatch.draw(pnum1, 30f, windowHeight - 615f, 15f, 15f)
+			 }
+			 number == 2 -> {
+			 espFont.draw(spriteBatch, "$name [BLUE]\n", 45f, windowHeight - 718f) 
+			 spriteBatch.draw(pnum2, 30f, windowHeight - 633f, 15f, 15f)
+			 }
+			 number == 3 -> {
+			 espFont.draw(spriteBatch, "$name [GREEN]\n", 45f, windowHeight - 835f) 
+			 spriteBatch.draw(pnum3, 30f, windowHeight - 650, 15f, 15f)
+			 }number == 4 -> {
+			 espFont.draw(spriteBatch, "$name [4]\n", 45f, windowHeight - 635f) 
+			 spriteBatch.draw(pnum3, 30f, windowHeight - 650, 15f, 15f)
+			 }
+			 else ->{
+			 espFont.draw(spriteBatch, "$myName [8]\n", 45f, windowHeight - 635f) 
+			 spriteBatch.draw(pnum3, 30f, windowHeight - 660, 15f, 15f)
+			 }
+			}
+			 
+			}else{
+			val fontText = "${distance}m | $angle°"
+			//First Let's Draw DISTANCE
+                //val fontText = "${distance}m | $angle° | [$number]"
+                var wep_xoff = getPositionOffset(nameFont,fontText)
+                nameFont.draw(spriteBatch,
+                        "$fontText", sx - wep_xoff.toFloat(), windowHeight - sy +30)
+                
+			}
+			//Name
                 val fontText1 = "${name}"
                 var  name_xoff = getPositionOffset(nameFont,fontText1)
                 nameFont.draw(spriteBatch,
@@ -1497,14 +1616,20 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                         val fontText = "[DOWNED]"
                         val health_xoff = getPositionOffset(nameFontRed,fontText)
                         //var health_xoff = ("[DOWNED]".length) * offsetDist
-                        nameFontRed.draw(spriteBatch, fontText, sx - health_xoff.toFloat(), windowHeight - sy + -10)
+                        nameFontRed.draw(spriteBatch, fontText, sx - health_xoff.toFloat(), windowHeight - sy + -15)
                     }
                     actorBeingRevived[actor.netGUID] == true -> {
                         val fontText = "[REVIVE]"
                         val health_xoff = getPositionOffset(nameFontRed,fontText)
                         //var health_xoff = ("[DOWNED]".length) * offsetDist
-                        nameFontRed.draw(spriteBatch, fontText, sx - health_xoff.toFloat(), windowHeight - sy + -10)
+                        nameFontRed.draw(spriteBatch, fontText, sx - health_xoff.toFloat(), windowHeight - sy + -15)
                     }
+					/*actorAims[actor.netGUID] == true -> {
+					val fontText = "[AIM]"
+                        val health_xoff = getPositionOffset(nameFontRed,fontText)
+                        nameFontRed.draw(spriteBatch, fontText, sx - health_xoff.toFloat(), windowHeight - sy + -25) 
+				
+					}*/
                     /*
                     (health > 75) -> {
                         val fontText = "[${df.format(health)}]"
@@ -1526,7 +1651,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                         nameFontRed.draw(spriteBatch, fontText, sx - health_xoff.toFloat(), windowHeight - sy -10)
                         */
                     }
-                }
+                }				
+				
                 // WEAPONS
                 weapon.forEachIndexed { index, element ->
                     when(element){
@@ -1551,6 +1677,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                             nameFontRed.draw(spriteBatch,
                                     "${element}", sx - wep_xoff.toFloat(), windowHeight - sy - dist)
                         }
+						"Groza" ->{
+                            val dist = (index + 2) * 12
+                            val fontText = "${element}"
+                            var wep_xoff = getPositionOffset(nameFont,fontText)
+                            nameFontRed.draw(spriteBatch,
+                                    "${element}", sx - wep_xoff.toFloat(), windowHeight - sy - dist)
+                        }
                         "M249" ->{
                             val dist = (index + 2) * 12
                             val fontText = "${element}"
@@ -1566,6 +1699,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                                     "${element}", sx - wep_xoff.toFloat(), windowHeight - sy - dist)
                         }
                         "SKS" ->{
+                            val dist = (index + 2) * 12
+                            val fontText = "${element}"
+                            var wep_xoff = getPositionOffset(nameFont,fontText)
+                            nameFontOrange.draw(spriteBatch,
+                                    "${element}", sx - wep_xoff.toFloat(), windowHeight - sy - dist)
+                        }
+						"FlareGun" ->{
                             val dist = (index + 2) * 12
                             val fontText = "${element}"
                             var wep_xoff = getPositionOffset(nameFont,fontText)
@@ -1613,6 +1753,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         glyphLayout.setText(bitmapFont, value)
         return glyphLayout.width / 2
     }
+	
+	private fun getTextHeight(bitmapFont: BitmapFont, value: String): Float {
+		val glyphLayout = GlyphLayout()
+		glyphLayout.setText(bitmapFont, value)
+		return glyphLayout.height
+	}
 
     private var lastPlayTime = System.currentTimeMillis()
     private fun safeZoneHint() {

@@ -1,5 +1,6 @@
 package pubg.radar.struct.cmd
 
+import pubg.radar.deserializer.channel.ActorChannel.Companion.airDropItems
 import pubg.radar.deserializer.channel.ActorChannel.Companion.droppedItemCompToItem
 import pubg.radar.deserializer.channel.ActorChannel.Companion.droppedItemGroup
 import pubg.radar.deserializer.channel.ActorChannel.Companion.droppedItemLocation
@@ -12,7 +13,7 @@ object DroppedItemGroupRootComponentCMD {
   fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
     with(bunch) {
       when (waitingHandle) {
-        4 -> {
+        3 -> {
           val arraySize = readUInt16()
           val comps = droppedItemGroup[actor.netGUID] ?: ArrayList(arraySize)
           val new = comps.isEmpty()
@@ -76,6 +77,10 @@ fun Bunch.updateItemBag(actor:Actor) {
     items.rawGet(i)?.apply {toRemove.add(this)}
   toRemove.removeAll(toAdd)
   itemBag[actor.netGUID]=items
-  for (removedComp in toRemove)
-    droppedItemLocation.remove(droppedItemCompToItem[removedComp] ?: continue)
+  for (removedComp in toRemove) {
+      airDropItems[actor.netGUID]?.forEachIndexed { i, tuple2 ->
+          val (guid,name) = tuple2
+          if(guid == removedComp) airDropItems[actor.netGUID]?.removeAt(i)
+      }
+   }
 }

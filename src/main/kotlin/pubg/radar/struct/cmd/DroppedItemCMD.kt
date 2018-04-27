@@ -12,7 +12,7 @@ object DroppedItemCMD {
         16 -> {
           val (itemguid, item) = readObject()
           droppedItemToItem[actor.netGUID] = itemguid
-//          println("$actor hasItem $itemguid,$item")
+          println("$actor hasItem $itemguid,$item")
         }
         else -> return false
       }

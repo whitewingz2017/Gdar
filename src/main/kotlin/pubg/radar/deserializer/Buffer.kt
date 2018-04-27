@@ -127,7 +127,7 @@ open class Buffer(
     fun readInt8(): Int {
         return readByte().toByte().toInt()
     }
-
+	
     fun readUInt8(): Int {
         return readByte()
     }
