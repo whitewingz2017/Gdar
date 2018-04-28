@@ -64,13 +64,14 @@ object ActorCMD : GameListener {
 
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
         with(bunch) {
-				//actorDowned[actor.netGUID] = false
-				//actorBeingRevived[actor.netGUID] = false
+				actorDowned[actor.netGUID] = false
+				actorBeingRevived[actor.netGUID] = false
             when (waitingHandle) {
 				1 -> {
                     val (attachComponnent, attachName) = bunch.readObject()
                 }
-				2 -> {
+				
+				2-> {
                     val (a, obj) = readObject()
                     val attachTo = if (a.isValid()) {
                         actors[a]?.attachChildren?.put(actor.netGUID, actor.netGUID)
@@ -97,13 +98,18 @@ object ActorCMD : GameListener {
                     }
                     bugln { ",attachLocation $actor ----------> $locationOffset" }
                 }
-                5 -> propertyVector100()
-                6 -> readRotationShort()
-                8 -> if (readBit()) {//bHidden
+                4 -> {
+                    val role = readInt(ROLE_MAX)
+                    val b = role
+                }
+				5 -> propertyVector100() //RelativeScale3D
+				6 -> readRotationShort() //RotationOffset (end struct)
+                7 -> readBit() //bCanBeDamage
+				8 -> if (readBit()) {//bHidden
                     visualActors.remove(actor.netGUID)
                     bugln { ",bHidden id$actor" }
                 }
-                9 -> if (!readBit()) {// bReplicateMovement
+				9 -> if (!readBit()) {// bReplicateMovement
                     if (!actor.isVehicle) {
                         visualActors.remove(actor.netGUID)
                     }
@@ -113,17 +119,16 @@ object ActorCMD : GameListener {
                     visualActors.remove(actor.netGUID)
                     bugln { ",bTearOff id$actor" }
                 }
-
-                12 -> {
+				11 -> propertyObject() //Instigator
+				12 -> {					// Owner
                     val (netGUID, obj) = readObject()
                     actor.owner = if (netGUID.isValid()) netGUID else null
                     bugln { " owner: [$netGUID] $obj ---------> beOwned:$actor" }
                 }
-				13 -> {
-                    val role = readInt(ROLE_MAX)
-                    val b = role
+                13 -> {			 		//RemoteRole
+                    readInt(ROLE_MAX)
                 }
-                14 -> {
+				14 -> {					//struct FRepMovement
                     repMovement(actor)
                     with(actor) {
                         when (Type) {
@@ -134,11 +139,10 @@ object ActorCMD : GameListener {
                         }
                     }
                 }
-                15 -> {
-                    readInt(ROLE_MAX)
+                15   -> readInt(ROLE_MAX) //Role
+				16 -> {//RemoteViewPitch 2
+                    val result = readUInt16() * shortRotationScale//pitch
                 }
-        
-                16 -> propertyObject()
                 17 -> {
                     val (playerStateGUID, playerState) = propertyObject()
                     if (playerStateGUID.isValid()) {
@@ -147,55 +151,26 @@ object ActorCMD : GameListener {
 
                     }
                 }
-                18 -> {//RemoteViewPitch 2
+				18 -> {//RemoteViewPitch 2
                     val result = readUInt16() * shortRotationScale//pitch
                 }
-                
-            //ACharacter
-                19 -> {
-                    val result = propertyFloat()
-                }
-                20 -> {
-                    val result = readBit()
-                }
-                21 -> {
-                    val result = readInt32()
-                }
-                22 -> {
-					val result = propertyFloat()
-                    //val Rotation = readRotationShort()
-                }//propertyRotator()
-                23 -> {
-                    val result = propertyName()
-                }
-                24 -> {
-                    val Rotation = readRotationShort()
-                }
-                25 -> {
-                    val result = propertyByte()
-                }
-                26 -> {
-                    val result = readBit()
-                }
-                28 -> {
-                    val result = propertyByte()
-                }
-                29 -> {
-                    val result = propertyBool()
-                }
-                30 -> {
-                    val result = propertyFloat()
-                }
+				19   -> propertyFloat() //AnimRootMotionTranslationScale
+                20   -> propertyBool() //bIsCrouched
+				21   -> propertyInt() //JumpMaxCount
+				22   -> propertyFloat() //JumpMaxHoldTime
+				23   -> propertyName() //struct FBasedMovementInfo ReplicatedBasedMovement | BoneName
+				24   -> readRotationShort() //bRelativeRotation
+				25   -> propertyBool() //bServerHasBaseComponent
+				26   -> propertyBool() //bServerHasVelocity
+				27   -> propertyVector100() //Location
+				28   -> propertyObject() //MovementBase
+				29   -> readRotationShort() //Rotation | end struct
+				30   -> propertyByte() //ReplicatedMovementMode
 				31 -> {
                     val ReplicatedServerLastTransformUpdateTimeStamp = propertyFloat()
                 }
-				//struct FRepRootMotionMontage RepRootMotion;
-                32 -> {
-                    val result = propertyVector100()
-                }
-                33 -> {
-                    val result = propertyObject()
-                }
+				32   -> propertyVector10() //struct FRepRootMotionMontage RepRootMotion | Acceleration
+				33   -> propertyObject() //AnimMontag
 				34 -> {//player
                     val bHasAdditiveSources = readBit()
                     val bHasOverrideSources = readBit()
@@ -203,32 +178,18 @@ object ActorCMD : GameListener {
                     val bIsAdditiveVelocityApplied = readBit()
                     val flags = readUInt8()
                 }
-                35 -> {
-                    val result = propertyVector100()
-                }
-                36 -> {
-                    val result = readRotationShort()
-                }//propertyRotator()
-                37 -> {
-                    val result = propertyObject()
-                }
-                38 -> {
-                    val result = propertyName()
-                }
-                39 -> {
-                    val result = propertyBool()
-                }
-                40 -> {
-                    val result = propertyBool()
-                }
-                42 -> {
-                    val result = propertyVector10()
-                }
-                43 -> {
-                    val result = propertyVector10()
-                }
-            //AMutableCharacter
-                44 -> {
+				35   -> propertyBool() //bIsActive
+				36   -> propertyBool() //bRelativePosition
+				37   -> propertyBool() //bRelativeRotation
+				38   -> propertyVector10() //LinearVelocity
+				
+				39   -> propertyVector100() //Location
+				40   -> propertyObject() //MovementBase
+				41   -> propertyName() //MovementBaseBoneName
+				42   -> propertyFloat() //Position
+				43   -> readRotationShort() //Rotation
+				//AMutableCharacter
+                44 -> {	//InstanceDescriptor
                     val arrayNum = readUInt16()
                     var index = readIntPacked()
                     while (index != 0) {
@@ -236,41 +197,35 @@ object ActorCMD : GameListener {
                         index = readIntPacked()
                     }
                 }
-				45 -> {
+				//ATslCharacter
+				45 -> {	//AimOffsets
                     val AimOffsets = propertyVectorNormal()
                     val b = AimOffsets
                 }
-				46 -> {
-                    val result = propertyInt()
-                }
-                47 -> {
-                    val result = propertyFloat()
-                }
-                48 -> {
+				46   -> propertyBool() //bAimStateActive
+				47   -> propertyBool() //bIsActiveRagdollActive
+				48 -> {
                     val bIsAimingRemote = propertyBool()
                 }
-                49 -> {
-                    val result = propertyObject()
-                }
-				51 -> {
-                    val result = propertyBool()
-                }
-                52 -> {
+				49   -> propertyBool() //bIsCoatEquipped
+				50   -> propertyBool() //bIsDemoVaulting_CP
+				51   -> propertyBool() //bIsFirstPersonRemote
+				52 -> {
                     val bIsDowned=propertyBool()
                     actorDowned[actor.netGUID] = bIsDowned
-					println("52: ${actor.netGUID} $bIsDowned")
+					//println("83: ${actor.netGUID} $bIsDowned")
                 }
-                53 -> {
-                    val result = propertyBool()
-                }
+				53   -> propertyBool() //bIsHoldingBreath
+				54   -> propertyBool() //bIsInVehicleRemote
+				55   -> propertyBool() //bIsPeekLeft
 				56 -> {
 				val (id, team) = propertyObject()
                     //val ActualDamage = propertyFloat()
                 }
-                57 -> {
+				57 -> {
                     val bIsReviving = propertyBool()
                     actorBeingRevived[actor.netGUID] = bIsReviving
-					println("57: ${actor.netGUID} $bIsReviving")
+					//println("84: ${actor.netGUID} $bIsReviving")
                 }
 				58 -> {
 					
@@ -282,126 +237,94 @@ object ActorCMD : GameListener {
 					//println("AIM: $bIsScopingRemote")
 					}
 				}
-				59 -> {
-                    val DamageOrigin = propertyVectorQ()
-                }
-				60 -> {
-                    val RelHitLocation = propertyVectorQ()
-                }
-                61 -> {
-                    val result = propertyName()
-                    val b = result
-                }
-                62 -> {
-                    val DamageMaxRadius = propertyFloat()
-                }
-                63 -> {
+				59   -> propertyBool() //bIsThirdPerson
+				60   -> propertyBool() //bIsThrowHigh
+				61   -> propertyBool() //bIsWeaponObstructed
+				62   -> propertyBool() //bIsZombie
+				63 -> {
                     val BoostGauge = propertyFloat()
                 }
-                64 -> {
+				64 -> {
                     val BoostGaugeMax = propertyFloat()
                 }
-                65 -> {
-                    val result = propertyBool()
-                }
-                66 -> {
-                    val result = propertyBool()
-                }
-                67 -> {
-                    val bKilled = propertyBool()
-                }
-                68 -> {
-                    val EnsureReplicationByte = propertyByte()
-                }
-                69 -> {
-                    val AttackerWeaponName = propertyName()
-                }
-                70 -> {
-                    val AttackerLocation = propertyVector()
-                }
-                71 -> {
-                    val TargetingType = readInt(3)
-                    val a = TargetingType
-                }
-                72 -> {
-                    val reviveCastingTime = propertyFloat()
-                    val a = reviveCastingTime
-                }
-                73 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
-                74 -> {
+				65   -> propertyBool() //bServerFinishedVault
+				66   -> propertyFloat() //BuffFinalSpreadFactor
+				67   -> propertyBool() //bUseRightShoulderAiming
+				68   -> propertyBool() //bWantsToCancelVault
+				69   -> propertyBool() //bWantsToRollingLeft
+				70   -> propertyBool() //bWantsToRollingRight
+				71   -> propertyBool() //bWantsToRun
+				72   -> propertyBool() //bWantsToSprint
+				73   -> propertyBool() //bWantsToSprintingAuto
+				74 -> {
                     val CharacterState = propertyByte()
                 }
-                75 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
-                76 -> {
+				75   -> propertyByte() //CurrentWeaponZoomLevel
+				76 -> {
                     val GroggyHealth = propertyFloat()
                 }
-                77 -> {
+				77 -> {
                     val GroggyHealthMax = propertyFloat()
                 }
-                78 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
-				79 -> {
+				78   -> readRotationShort() //GunDirectionSway
+                79 -> {
                     val health = propertyFloat()
                     actorHealth[actor.netGUID] = health
                 }
                 80 -> {
                     val healthMax = propertyFloat()
                 }
-				81 -> {
-                    val result = propertyBool()
-                    val b = result
+				81   -> propertyBool() //IgnoreRotation
+				82   -> propertyObject() //InventoryFacade
+				83   -> propertyFloat() //struct FTakeHitInfo | ActualDamage
+                84 -> {
+                    val AttackerLocation = propertyVector()
                 }
 				85 -> {
-                    val result = propertyBool()
-                    val b = result
+                    val AttackerWeaponName = propertyName()
                 }
-                86 -> {
-                    val result = propertyBool()
-                    val b = result
+				86 -> {
+                    val bKilled = propertyBool()
                 }
-                87 -> {
-                    val result = propertyBool()
-                    val b = result
+				87   -> propertyName() //BoneName
+				88   -> propertyBool() //bPointDamage
+				89   -> propertyBool() //bRadialDamage
+				90 -> {
+                    val DamageMaxRadius = propertyFloat()
                 }
-                88 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
-                89 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
-                90 -> {
-                    val result = readRotationShort()//propertyRotator()
-                    val b = result
+				91 -> {
+                    val DamageOrigin = propertyVectorQ()
                 }
 				92 -> {
                     val damageType = propertyObject()
                 }
 				93 -> {
-                    val result = propertyBool()
-                    val b = result
+                    val EnsureReplicationByte = propertyByte()
                 }
                 94 -> {
                     val PlayerInstigator = propertyObject()
                 }
-            //ATslCharacter
-                100 -> {
+				95 -> {
+                    val RelHitLocation = propertyVectorQ()
+                }
+				96   -> propertyByte() //ShotDirPitch
+				97 -> {
+                    val ShotDirYaw = propertyByte()
+                }
+				98   -> readObject() //NetOwnerController
+				99   -> readInt(4) //PreReplicatedStanceMode
+				100 -> {
                     val remote_CastAnim = readInt(8)
                 }
-                102 -> {
+				101 -> {
+                    val reviveCastingTime = propertyFloat()
+                    val a = reviveCastingTime
+                }
+				102 -> {
                     val ShoesSoundType = readInt(8)
                     val b = ShoesSoundType
                 }
-                103 -> {
+				103 -> {
                     //SpectatedCount
                     val spectated = propertyInt()
 					selfSpectatedCount = spectated
@@ -411,22 +334,16 @@ object ActorCMD : GameListener {
 						//println("SPECS: ${PlayerStateCMD.selfSpectated}")
                     }
                 }
-                104 -> {
-                    val result = readInt(4)
-                    val b = result
+				104 -> {
+                    val TargetingType = readInt(3)
+                    val a = TargetingType
                 }
-                105 -> {
-                    val result = propertyBool()
-                    val b = result
+				105 -> {
+				val (id, team) = propertyObject()
+                    //val ActualDamage = propertyFloat()
                 }
-                106 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
-                107 -> {
-                    val result = propertyBool()
-                    val b = result
-                }
+				106  -> readObject() //VehicleRiderComponent
+                107  -> propertyObject() //WeaponProcessor
                 else -> return false
             }
             return true

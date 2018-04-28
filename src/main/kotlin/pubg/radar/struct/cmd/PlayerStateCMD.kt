@@ -154,7 +154,7 @@ object PlayerStateCMD : GameListener {
                 38 -> {
                     val NumKills = propertyInt()
                     playerNumKills[actor.netGUID] = NumKills
-					println("NUM KILLS: $NumKills")
+					//println("NUM KILLS: $NumKills")
                 }
 				39 -> {
                     val HeadShots = propertyInt()
@@ -170,11 +170,15 @@ object PlayerStateCMD : GameListener {
                     val TotalMovedDistanceMeter = propertyFloat()
                     selfStateID = actor.netGUID//only self will get this update
 //          selfID = actor.netGUID//only self will get this update
-                }43 -> {//indicate player's death
+                }
+				43 -> {		//indicate player's death
                     val Ranking = propertyInt()
 //          println("${playerNames[actor.netGUID]}${actor.netGUID} Ranking=$Ranking")
                 }
-                //44 -> 
+                44   ->
+				{//TArray<struct FReplicatedCastableItem> ReplicatedCastableItems
+					return false
+				}
 				45 ->
 				{//ReplicatedEquipableItems
                     return false

@@ -34,7 +34,7 @@ object TeamCMD : GameListener {
         with(bunch) {
             //      println("${actor.netGUID} $waitingHandle")
             when (waitingHandle) {
-                5 -> {
+                12 -> {
                     val (netGUID, obj) = readObject()
                     actor.owner = if (netGUID.isValid()) netGUID else null
                     bugln { " owner: [$netGUID] $obj ---------> beOwned:$actor" }
@@ -63,9 +63,6 @@ object TeamCMD : GameListener {
                 30 -> {
                     val playerRotation = readRotationShort()
                 }
-                
-                
-				
 				32 ->
 				{
 				//SquadNumber

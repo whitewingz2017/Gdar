@@ -83,7 +83,7 @@ object GameStateCMD: GameListener {
                         val SpectatorClass = propertyObject()
                         val b = SpectatorClass
                     }
-					20 -> {
+                     20 -> {
                         val ElapsedTime = propertyInt()
                         val b = ElapsedTime
                     }
@@ -95,80 +95,90 @@ object GameStateCMD: GameListener {
 					{//new for 3.7.27.18
 						val bCanKillerSpectate = propertyBool()
 					}
-                    23   ->
+					23 ->
 					{
 						val bCanShowLastCircleMark = propertyBool()
 					}
-					24   -> propertyBool() //bIsCustomGame
-					25   ->
+					24 -> propertyBool() //bIsCustomGame
+					25 ->
 					{
 						val bIsGasRelease = propertyBool()
 					}
+					26 -> propertyBool() //bIsTeamElimination
 					27   ->
 					{
 						isTeamMatch = propertyBool()
 					}
-					28   ->
+					28 ->
 					{
 						val bIsWarMode = propertyBool()
 					}
-					29   -> propertyBool() //bIsWinnerZombieTeam
-					31   ->
+					29 -> propertyBool() //bIsWinnerZombieTeam
+					30 -> propertyBool() //bIsWorkingBlueZone
+					31 ->
 					{
 						val bIsZombieMode = propertyBool()
 					}
-					32   ->
+					32 ->
 					{
 						val bShowAircraftRoute = propertyBool()
 					}
-					33   ->
+					33 ->
 					{
 						val bShowLastCircleMark = propertyBool()
 					}
-					34   ->
+					34 ->
 					{
 						val bTimerPaused = propertyBool()
 						val b = bTimerPaused
 					}
-					36   ->
+					35 -> propertyBool() //bUseWarRoyaleBluezone
+					36 ->
 					{
 						val bUseXboxUnauthorizedDevice = propertyBool()
 					}
-					38   ->
+					37 -> propertyBool() //bUsingSquadInTeam
+					38 ->
 					{
 						ElapsedReleaseDuration = propertyFloat()
 						val b = ElapsedReleaseDuration
 					}
-					39   ->
+					39 ->
 					{
 						ElapsedWarningDuration = propertyFloat()
 					}
-					40   ->
+					40 ->
 					{
 						val GoalScore = propertyInt()
 					}
+					/*41   ->
+					{
+						val LastCirclePosition = readVector2D()
+						val b = LastCirclePosition
+					}*/
 					42 -> {
                         MatchElapsedMinutes = propertyInt()
                     }
-                    43 -> {
+					43 -> {
                         val MatchElapsedTimeSec = propertyBool()
                     }
 					44 -> {
                         val MatchId = propertyString()
                         val b = MatchId
                     }
-                    45 -> {
+					45 -> {
                         val MatchShortGuid = propertyString()
                         val b = MatchShortGuid
                     }
-                    46   ->
+					46   ->
 					{
 						val MatchStartType = propertyByte()
 					}
+					47   -> propertyFloat() //NextRespawnTimeSeconds 
 					48   ->
 					{
 						NumAlivePlayers = propertyInt()
-        				  println(NumAlivePlayers)
+//        				  println(NumAlivePlayers)
 					}
 					49   ->
 					{
@@ -183,12 +193,12 @@ object GameStateCMD: GameListener {
 					{
 						NumJoinPlayers = propertyInt()
 					}
-					52   ->
+                    52   ->
 					{
 						val NumStartPlayers = propertyInt()
 						val b = NumStartPlayers
 					}
-					53   ->
+                    53   ->
 					{
 						val NumStartTeams = propertyInt()
 						val b = NumStartTeams
@@ -240,20 +250,23 @@ object GameStateCMD: GameListener {
 					{
 						SafetyZoneRadius = propertyFloat()
 					}
-					67   ->
-					{//TeamScores
-					return false
-					}
+					64   -> readUInt16() //teamIds
+					65 	 -> readUInt16() //TeamIndices
+					66   -> readUInt16() //TeamLeaderNames
+					67   -> readUInt16() //TeamScore
+					68   -> propertyFloat() //TimeLimitSeconds
 					69   ->
 					{
 						TotalReleaseDuration = propertyFloat()
 						val b = TotalReleaseDuration
 					}
+					
 					70   ->
 					{
 						TotalWarningDuration = propertyFloat()
 					}
-					else -> return ActorCMD.process(actor, bunch, repObj, waitingHandle, data)
+					
+                    else -> return ActorCMD.process(actor, bunch, repObj, waitingHandle, data)
                 }
                 return true
             }

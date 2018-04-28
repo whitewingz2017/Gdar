@@ -16,6 +16,15 @@ object APawnCMD {
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
         with(bunch) {
             when (waitingHandle) {
+				3 -> {
+                    val role = readInt(ROLE_MAX)
+                    val b = role
+                }
+                1 -> {
+                    val (netGUID, obj) = readObject()
+                    actor.owner = if (netGUID.isValid()) netGUID else null
+                    bugln { " owner: [$netGUID] $obj ---------> beOwned:$actor" }
+                }
 				2 -> {
                     val (a, obj) = readObject()
                     val attachTo = if (a.isValid()) {
@@ -45,15 +54,7 @@ object APawnCMD {
                     ActorChannel.visualActors.remove(actor.netGUID)
                     bugln { ",bTearOff id$actor" }
                 }
-                13 -> {
-                    val role = readInt(ROLE_MAX)
-                    val b = role
-                }
-                12 -> {
-                    val (netGUID, obj) = readObject()
-                    actor.owner = if (netGUID.isValid()) netGUID else null
-                    bugln { " owner: [$netGUID] $obj ---------> beOwned:$actor" }
-                }
+                
                 14 -> {
                     repMovement(actor)
                     with(actor) {
@@ -65,7 +66,9 @@ object APawnCMD {
                         }
                     }
                 }
-                
+				16   -> propertyObject() //Controller
+				17   -> propertyObject() //PlayerState
+				18   -> readUInt16()	 //RemoteViewPitch
                 else -> return false
             }
             return true

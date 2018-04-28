@@ -58,8 +58,12 @@ object WeaponProcessorCMD {
                     repMovement(actor)
                 }
                 15 -> propertyObject()
+				16 -> {//CurrentWeaponIndex
+                    val currentWeaponIndex = propertyInt()
+//          println("$actor carry $currentWeaponIndex")
+                }
             //AWeaponProcessor
-                16 -> {//EquippedWeapons
+                17 -> {//EquippedWeapons
                     val arraySize = readUInt16()
                     actorHasWeapons.compute(actor.owner!!) { _, equippedWeapons ->
                         val equippedWeapons = equippedWeapons ?: IntArray(arraySize)
@@ -74,10 +78,7 @@ object WeaponProcessorCMD {
                         equippedWeapons
                     }
                 }
-                17 -> {//CurrentWeaponIndex
-                    val currentWeaponIndex = propertyInt()
-//          println("$actor carry $currentWeaponIndex")
-                }
+                
                 else -> return false
             }
             return true
