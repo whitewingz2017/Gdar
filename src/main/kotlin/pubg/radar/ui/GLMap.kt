@@ -57,7 +57,7 @@ import pubg.radar.struct.cmd.ActorCMD.actorDowned
 import pubg.radar.struct.cmd.ActorCMD.actorBeingRevived
 import pubg.radar.struct.cmd.ActorCMD.actorHealth
 import pubg.radar.struct.cmd.ActorCMD.actorWithPlayerState
-//import pubg.radar.struct.cmd.ActorCMD.spectatedCount //SelfSpectated Count
+import pubg.radar.struct.cmd.ActorCMD.spectatedCount //SelfSpectated Count
 //import pubg.radar.struct.cmd.ActorCMD.playerSpectatedCounts
 //import pubg.radar.struct.cmd.PlayerStateCMD.selfSpectated
 import pubg.radar.struct.cmd.ActorCMD.playerStateToActor
@@ -83,7 +83,7 @@ import pubg.radar.struct.cmd.PlayerStateCMD.teamNumbers
 
 import pubg.radar.util.tuple4
 import wumo.pubg.struct.cmd.TeamCMD.team
-//import wumo.pubg.struct.cmd.TeamCMD.teamNumberss
+import wumo.pubg.struct.cmd.TeamCMD.teamNumberss
 import java.security.Key
 import java.text.DecimalFormat
 import java.util.*
@@ -719,14 +719,14 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 			
 			
 			}
-/*			val specCount = spectatedCount
+			val specCount = spectatedCount
 			val eyes = specCount.toString()
 			val numText1 = "$eyes"
 			layout.setText(hubFont, numText1)
 			spriteBatch.draw(hubpanel, windowWidth - 400f, windowHeight - 60f)
 			redFontShadow.draw(spriteBatch, "EYES", windowWidth - 355f, windowHeight - 29f)
 			redFont.draw(spriteBatch, "$eyes", windowWidth - 610f + 228f - layout.width / 2, windowHeight - 29f)
-	*/		
+			
 			/*if (selfSpectatedCount > 0){
                layout.setText(redFont, numSpectator)
                 spriteBatch.draw(hubpanel, windowWidth - 380f, windowHeight - 60f)
@@ -1413,6 +1413,24 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                         val (actor, x, y, dir) = it
 						actor!!
                         val (sx, sy) = Vector2(x, y).mapToWindow()
+						val selfStateGUID = actorWithPlayerState[selfID] ?: return@forEach
+						val playerStateGUID = actorWithPlayerState[actor.netGUID] ?: return@forEach
+						var playerStateGUIDx = NetworkGUID(playerStateGUID.toString().drop(18).dropLast(1).toInt() + 2)
+							val name = playerNames[playerStateGUID] ?: return@forEach
+							
+						
+						if (teamNumbers[playerStateGUID] == teamNumbers[selfStateGUID])
+						{
+						when (teamNumberss[playerStateGUIDx]){
+							0 -> espFont.draw(spriteBatch, "$name [YELLOW]\n", 145f, windowHeight - 635f) 
+							1 -> espFont.draw(spriteBatch, "$name [ORANGE]\n", 145f, windowHeight - 655f) 
+							2 -> espFont.draw(spriteBatch, "$name [BLUE]\n", 145f, windowHeight - 675f) 							
+							3 -> espFont.draw(spriteBatch, "$name [GREEN]\n", 145f, windowHeight - 695f) 
+							4 -> espFont.draw(spriteBatch, "$name [5]\n", 145f, windowHeight - 725f) 
+							5 -> espFont.draw(spriteBatch, "$name [6]\n", 145f, windowHeight - 745f) 
+							6 -> espFont.draw(spriteBatch, "$name [7]\n", 145f, windowHeight - 765f) 
+							}
+						}
                         if (isTeammate(actor)) {
                             if (toggleView != -1) {
                                 spriteBatch.draw(
