@@ -14,6 +14,20 @@ object DroppedItemCMD {
           droppedItemToItem[actor.netGUID] = itemguid
           println("$actor hasItem $itemguid,$item")
         }
+		17   ->
+          {//struct FSkinData SkinData | SkinTargetDatas TArray<struct FSkinTargetData> | struct FName TargetName, class USkinDataConfig* SkinDataConfig
+            readUInt16() //arraySize
+            var index = readIntPacked()
+            while (index != 0)
+            {
+              when ((index - 1) % 2)
+              {
+                0 -> readObject() //SkinDataConfig
+                1 -> readName() //TargetName
+              }
+              index = readIntPacked()
+            }
+          }
         else -> return false
       }
       return true

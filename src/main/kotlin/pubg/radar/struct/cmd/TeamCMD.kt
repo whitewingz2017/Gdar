@@ -46,9 +46,8 @@ object TeamCMD : GameListener {
                 }
 				27   ->
 					{//MemberNumber
-					val teamNumber = readInt(15)
-					teamNumberss[actor.netGUID] = teamNumber
-					//println("${playerNames}${actor.netGUID} TeamNumber=$teamNumber \n")
+					 val MemberNumber = readInt8()
+			println("TeamCMD: ${actor.netGUID}: $MemberNumber")
 					}
                 28 -> {
                     val playerLocation = propertyVector100()
@@ -58,7 +57,7 @@ object TeamCMD : GameListener {
 					team[name] = name
 					playerNames[name] = name
 					//query(name)
-					println("$(actor.netGUID} playerID=$name $teamNumber")
+					println("TeamName: ${team[name]}")
 					}
                 30 -> {
                     val playerRotation = readRotationShort()

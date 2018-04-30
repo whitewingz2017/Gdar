@@ -112,12 +112,12 @@ object PlayerStateCMD : GameListener {
                 }
                 25 -> {
                     val StartTime = propertyInt()
-          println("25 ${actor.netGUID} StartTime=$StartTime")
+          //println("25 ${actor.netGUID} StartTime=$StartTime")
                 }
                 26 -> {
                     val uniqueId = propertyNetId()
                     uniqueIds[uniqueId] = actor.netGUID
-          println("26 ${playerNames[actor.netGUID]}${actor.netGUID} uniqueId=$uniqueId")
+          //println("26 ${playerNames[actor.netGUID]}${actor.netGUID} uniqueId=$uniqueId")
                 }
 				 27 -> {
                     val AccountId = propertyString()
@@ -173,7 +173,7 @@ object PlayerStateCMD : GameListener {
                 }
 				43 -> {		//indicate player's death
                     val Ranking = propertyInt()
-//          println("${playerNames[actor.netGUID]}${actor.netGUID} Ranking=$Ranking")
+//          //println("${playerNames[actor.netGUID]}${actor.netGUID} Ranking=$Ranking")
                 }
                 44   ->
 				{//TArray<struct FReplicatedCastableItem> ReplicatedCastableItems
@@ -189,9 +189,10 @@ object PlayerStateCMD : GameListener {
                 47 -> {
                     val teamNumber = readInt(100)
                     teamNumbers[actor.netGUID] = teamNumber
-					println("48 TNum: $teamNumber")
+					println("48 TNum: $teamNumber ${playerNames[actor.netGUID]}")
                 }
-				else -> return false
+				else -> return ActorCMD.process(actor, bunch, repObj, waitingHandle, data)
+        
             }
         }
         return true

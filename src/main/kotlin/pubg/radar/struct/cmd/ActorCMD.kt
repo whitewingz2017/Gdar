@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
 var selfDirection = 0f
 val selfCoords = Vector3()
 var selfAttachTo: Actor? = null
-var selfSpectatedCount = 0
+var spectatedCount = 0
 
 
 object ActorCMD : GameListener {
@@ -49,7 +49,7 @@ object ActorCMD : GameListener {
         playerStateToActor.clear()
         actorHealth.clear()
 		playerSpectatedCounts.clear()
-		//selfSpectated.clear()
+		var spectatedCount = 0
 		actorDowned.clear()
 		actorBeingRevived.clear()
     }
@@ -61,7 +61,7 @@ object ActorCMD : GameListener {
     val actorDowned = ConcurrentHashMap<NetworkGUID, Boolean>()
     val actorBeingRevived = ConcurrentHashMap<NetworkGUID, Boolean>()
 	val actorAims = ConcurrentHashMap<NetworkGUID, Boolean>()
-
+	var spectatedCount = 0
     fun process(actor: Actor, bunch: Bunch, repObj: NetGuidCacheObject?, waitingHandle: Int, data: HashMap<String, Any?>): Boolean {
         with(bunch) {
 				actorDowned[actor.netGUID] = false
@@ -327,7 +327,7 @@ object ActorCMD : GameListener {
 				103 -> {
                     //SpectatedCount
                     val spectated = propertyInt()
-					selfSpectatedCount = spectated
+					spectatedCount = spectated
 					//println("Other: ${actor.netGUID} $spectated")
                     if (actor.netGUID == selfID) {
                         PlayerStateCMD.selfSpectated = spectated
@@ -335,12 +335,12 @@ object ActorCMD : GameListener {
                     }
                 }
 				104 -> {
-                    val TargetingType = readInt(3)
+                    val TargetingType = readInt(4)
                     val a = TargetingType
                 }
 				105 -> {
 				val (id, team) = propertyObject()
-                    //val ActualDamage = propertyFloat()
+                   
                 }
 				106  -> readObject() //VehicleRiderComponent
                 107  -> propertyObject() //WeaponProcessor

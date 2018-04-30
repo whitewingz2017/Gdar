@@ -8,11 +8,11 @@ object AirDropComponentCMD {
     fun process(actor:Actor,bunch:Bunch,repObj:NetGuidCacheObject?,waitingHandle:Int,data:HashMap<String,Any?>):Boolean {
         with(bunch) {
             when (waitingHandle) {
-                6 -> {
+                14 -> {
                     repMovement(actor)
                     airDropLocation[actor.netGUID]=actor.location
                 }
-                16 -> updateItemBag(actor)
+                17 -> updateItemBag(actor)
                 else -> return ActorCMD.process(actor,bunch,repObj,waitingHandle,data)
             }
             return true

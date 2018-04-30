@@ -19,22 +19,22 @@ object WeaponProcessorCMD {
         with(bunch) {
             when (waitingHandle) {
             //AActor
-                1 -> if (readBit()) {//bHidden
+				8 -> if (readBit()) {//bHidden
                 }
-                7 -> if (!readBit()) {// bReplicateMovement
+                9 -> if (!readBit()) {// bReplicateMovement
                 }
-                3 -> if (readBit()) {//bTearOff
+                10 -> if (readBit()) {//bTearOff
                 }
-                4 -> {
+                13 -> {
                     val role = readInt(ROLE_MAX)
                     val b = role
                 }
-                5 -> {
+                12 -> {
                     val (netGUID, _) = readObject()
                     actor.owner = if (netGUID.isValid()) netGUID else null
 //          println("$actor isOwnedBy ${actors[netGUID] ?: netGUID}")
                 }
-                6 -> {
+                14 -> {
                     repMovement(actor)
                 }
                 2 -> {
@@ -48,16 +48,16 @@ object WeaponProcessorCMD {
                         actors[actor.attachParent!!]?.attachChildren?.remove(actor.netGUID)
                     actor.attachParent = attachTo
                 }
-                8 -> propertyVector100()
+                4 -> propertyVector100()
                 9 -> propertyVector100()
-                10 -> readRotationShort()
-                11 -> propertyName()
-                12 -> readObject()
-                13 -> readInt(ROLE_MAX)
+                11 -> readRotationShort()
+                3 -> propertyName()
+                2 -> readObject()
+                15 -> readInt(ROLE_MAX)
                 14 -> {
                     repMovement(actor)
                 }
-                15 -> propertyObject()
+                1 -> propertyObject()
 				16 -> {//CurrentWeaponIndex
                     val currentWeaponIndex = propertyInt()
 //          println("$actor carry $currentWeaponIndex")
@@ -79,7 +79,8 @@ object WeaponProcessorCMD {
                     }
                 }
                 
-                else -> return false
+               else -> return ActorCMD.process(actor, bunch, repObj, waitingHandle, data)
+        
             }
             return true
         }
