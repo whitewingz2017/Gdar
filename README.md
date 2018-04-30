@@ -3,7 +3,7 @@
 # PUBG Radar
 
 | ![enter image description here](https://s17.postimg.org/vwp8srvsf/image.png)
-
+| ![enter image description here](http://i64.tinypic.com/2h87cba.jpg)
 
 # Unique Features
  - Minimalist UI designed to show the most action.
