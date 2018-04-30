@@ -139,7 +139,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
     fun show() {
         val config = Lwjgl3ApplicationConfiguration()
-        config.setTitle("RageRadar 2.0 - SHOW MENU[INS]")
+        config.setTitle("RageRadar 2.1 - SHOW MENU[INS]")
         config.useOpenGL3(false, 2, 1)
         config.setWindowedMode(800, 600)
         config.setResizable(true)
@@ -213,6 +213,11 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var parachute_team: Texture
     private lateinit var parachute_self: Texture
     private lateinit var grenade: Texture
+	private lateinit var toggleOff: Texture
+    private lateinit var toggleOn: Texture
+	private lateinit var menuBG: Texture
+    private lateinit var menuTop: Texture
+    private lateinit var menuBot: Texture
     private lateinit var hubFont: BitmapFont
     private lateinit var hubFontSmall: BitmapFont
     private lateinit var hubFont1: BitmapFont
@@ -259,7 +264,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private var filterThrow = 1
     private var filterLevel3 = -1
     private var laptopToggle = -1
-    private var filterNames = -1
+    private var toggleMenu = 1
+	private var filterNames = -1
     private var filterUseless = 1
     private var toggleView = 1
 	private var screenScale = 1f
@@ -370,6 +376,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 NUM_5 -> drawGrid = drawGrid * -1 //Show Grid (Default ON)
                 NUM_9 -> toggleAirDropLines = toggleAirDropLines * -1 //Show Lines to Airdrops
                 NUM_0 -> toggleView = toggleView * -1 //Show View Lines (Default ON)
+				INSERT -> toggleMenu = toggleMenu * -1 //On-Off Menu
             }
         } else { // Laptop Mode OFF
             when (keycode) {
@@ -399,7 +406,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 F5 -> drawGrid = drawGrid * -1 //Toggle Grid (Default ON)
                 F9 -> toggleAirDropLines = toggleAirDropLines * -1 //Show Lines to Airdrops
                 F11 -> toggleView = toggleView * -1 //Toggle View Lines (Default ON)
-                // F12 -> ForceRestart() //NOT YET IMPLEMENTED
+                INSERT -> toggleMenu = toggleMenu * -1 //On-Off Menu
+				// F12 -> ForceRestart() //NOT YET IMPLEMENTED
 
             // Zoom In/Out || Overrides Max/Min Zoom
                 MINUS -> camera.zoom = camera.zoom + 0.00525f //Zoom OUT
@@ -446,9 +454,17 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         itemCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         alarmSound = Gdx.audio.newSound(Gdx.files.internal("sounds/Alarm.wav"))
+		
         hubpanel = Texture(Gdx.files.internal("images/hub_panel.png"))
         hubpanelblank = Texture(Gdx.files.internal("images/hub_panel_blank_long.png"))
-        corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
+        
+		 menuTop = Texture(Gdx.files.internal("images/menu_top.png"))
+        menuBG = Texture(Gdx.files.internal("images/menu_bg.png"))
+        menuBot = Texture(Gdx.files.internal("images/menu_bottom.png"))
+        toggleOn = Texture(Gdx.files.internal("images/check_on.png"))
+        toggleOff = Texture(Gdx.files.internal("images/check_off.png"))
+		
+		corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
         airdropimage = Texture(Gdx.files.internal("icons/airdrop.png"))
         pnum1 = Texture(Gdx.files.internal("images/n2.png"))
         pnum2 = Texture(Gdx.files.internal("images/n3.png"))
@@ -704,17 +720,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             hubFont.draw(spriteBatch, "$NumAlivePlayers", windowWidth - 110f - layout.width / 2, windowHeight - 29f)
 			
             val teamText = "${GameStateCMD.NumAliveTeams}"
-			//val numSpectator = "$selfSpectatedCount"
 
             if (teamText != numText && teamText > "0") {
                 layout.setText(hubFont, teamText)
                 spriteBatch.draw(hubpanel, windowWidth - 260f, windowHeight - 60f)
                 hubFontShadow.draw(spriteBatch, "TEAM", windowWidth - 215f, windowHeight - 29f)
                 hubFont.draw(spriteBatch, "${GameStateCMD.NumAliveTeams}", windowWidth - 240f - layout.width / 2, windowHeight - 29f)
-			//Spectate
-			//val numText1 = "$numSpecs"
-            //layout.setText(hubFont, numText1)
-            //hubFont.draw(spriteBatch, "EYES: $numSpectator", windowWidth - 240f - layout.width / 2, windowHeight - 59f)
+			
 
 			
 			
@@ -727,14 +739,83 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 			redFontShadow.draw(spriteBatch, "EYES", windowWidth - 355f, windowHeight - 29f)
 			redFont.draw(spriteBatch, "$eyes", windowWidth - 610f + 228f - layout.width / 2, windowHeight - 29f)
 			
-			/*if (selfSpectatedCount > 0){
-               layout.setText(redFont, numSpectator)
-                spriteBatch.draw(hubpanel, windowWidth - 380f, windowHeight - 60f)
-                redFontShadow.draw(spriteBatch, "EYES", windowWidth - 335f, windowHeight - 29f)
-                redFont.draw(spriteBatch, "${numSpectator}", windowWidth - 360f - layout.width / 2, windowHeight - 29f)
-            }*/
+
+			 if(toggleMenu == 1) {
+
+                /*
+                menuTop -> Top of Menu
+                menuBG -> BG of Menu
+                menuBot ->Bottom of Menu
+                toggleOn -> Check Mark
+                toggleOff -> X Mark
+                */
+
+                spriteBatch.draw(menuTop, 0f, windowHeight - 95)
+                spriteBatch.draw(menuBG, 0f, windowHeight - 145f)
+                spriteBatch.draw(menuBG, 0f, windowHeight - 195f)
+                spriteBatch.draw(menuBG, 0f, windowHeight - 245f)
+                spriteBatch.draw(menuBG, 0f, windowHeight - 295f)
+                spriteBatch.draw(menuBG, 0f, windowHeight - 345f)
+                spriteBatch.draw(menuBot, 0f, windowHeight - 350f)
 
 
+
+                if (laptopToggle == 1) {
+                    espFont.draw(spriteBatch, "Laptop Mode (F1)", 40f, windowHeight - 105f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 125f)
+                } else {
+                    espFont.draw(spriteBatch, "Laptop Mode (F1)", 40f, windowHeight - 105f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 125f)
+                }
+                if (toggleVehicles == -1) {
+                    espFont.draw(spriteBatch, "Show Vehicles (F7/7)", 40f, windowHeight - 135f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 155f)
+                } else {
+                    espFont.draw(spriteBatch, "Show Vehicles (F7/7)", 40f, windowHeight - 135f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 155f)
+                }
+                if (toggleVNames == -1) {
+                    espFont.draw(spriteBatch, "Show Vehicle Names (F6/6)", 40f, windowHeight - 165f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 185f)
+                } else {
+                    espFont.draw(spriteBatch, "Show Vehicle Names (F6/6)", 40f, windowHeight - 165f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 185f)
+                }
+                if (showZ == 1) {
+                    espFont.draw(spriteBatch, "Show Item Height (F4/4)", 40f, windowHeight - 195f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 215f)
+                } else {
+                    espFont.draw(spriteBatch, "Show Item Height (F4/4)", 40f, windowHeight - 195f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 215f)
+                }
+                if (filterNames == -1) {
+                    espFont.draw(spriteBatch, "Show Player Data (F8/8)", 40f, windowHeight - 225f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 245f)
+                } else {
+                    espFont.draw(spriteBatch, "Show Player Data (F8/8)", 40f, windowHeight - 225f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 245f)
+                }
+                if (drawGrid == -1) {
+                    espFont.draw(spriteBatch, "Show Grid (F5/5)", 40f, windowHeight - 255f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 275f)
+                } else {
+                    espFont.draw(spriteBatch, "Show Grid (F5/5)", 40f, windowHeight - 255f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 275f)
+                }
+                if (toggleAirDropLines == 1) {
+                    espFont.draw(spriteBatch, "Show Airdrop Info (F9/9)", 40f, windowHeight - 285f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 305f)
+                } else {
+                    espFont.draw(spriteBatch, "Show Airdrop Info (F9/9)", 40f, windowHeight - 285f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 305f)
+                }
+                if (toggleView == 1) {
+                    espFont.draw(spriteBatch, "Show View Direction (F10/0)", 40f, windowHeight - 315f)
+                    spriteBatch.draw(toggleOn, 5f, windowHeight - 335f)
+                } else {
+                    espFont.draw(spriteBatch, "Show View Direction (F10/0)", 40f, windowHeight - 315f)
+                    spriteBatch.draw(toggleOff, 5f, windowHeight - 335f)
+                }
 			
             // ITEM ESP FILTER PANEL
             spriteBatch.draw(hubpanelblank, 30f, windowHeight - 60f)
@@ -792,6 +873,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             drawPlayerNames(typeLocation[Player], selfX, selfY)
             littleFont.draw(spriteBatch, "$pinDistance", x, windowHeight - y)
         }
+		}
 
         // This makes the array empty if the filter is off for performance with an inverted function since arrays are expensive
 
